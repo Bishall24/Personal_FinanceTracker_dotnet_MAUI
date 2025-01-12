@@ -230,7 +230,7 @@ else
             <label for="dueDate">Due Date</label>
             <input id="dueDate" type="date" min='@DateTime.Today.ToString("yyyy-MM-dd")'
             value='@_todoModel.DueDate.ToString("yyyy-MM-dd")' @onchange="updateDate" class="form-control text-left"
-            placeholder="Due Date">
+            >
         </div>
 
         @if (!string.IsNullOrEmpty(_editTodoErrorMessage))
@@ -359,6 +359,30 @@ else
         {
             try
             {
+                // Validation
+                if (string.IsNullOrWhiteSpace(_todoModel.TaskName))
+                {
+                    _editTodoErrorMessage = "Task Name is required.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(_todoModel.SourceofDebt))
+                {
+                    _editTodoErrorMessage = "Source of Debt is required.";
+                    return;
+                }
+
+                if (!decimal.TryParse(_todoModel.DebtAmount, out var debtAmount) || debtAmount <= 0)
+                {
+                    _editTodoErrorMessage = "Debt Amount must be a valid number greater than zero.";
+                    return;
+                }
+
+                if (_todoModel.DueDate == default)
+                {
+                    _editTodoErrorMessage = "Due Date is required.";
+                    return;
+                }
                 _editTodoErrorMessage = "";
                 if (_todoModel.Id == Guid.Empty)
                 {
