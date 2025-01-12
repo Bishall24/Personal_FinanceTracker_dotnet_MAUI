@@ -44,6 +44,7 @@ public static class Utils
 
     public static string GetAppDirectoryPath()
     {
+
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "Islington-Todo"
@@ -53,6 +54,8 @@ public static class Utils
     public static string GetAppUsersFilePath()
     {
         return Path.Combine(GetAppDirectoryPath(), "users.json");
+
+
     }
 
     public static string GetTodosFilePath(Guid userId)

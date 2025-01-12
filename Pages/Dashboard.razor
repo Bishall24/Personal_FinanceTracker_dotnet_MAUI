@@ -1,0 +1,412 @@
+﻿
+@page "/dashboard"
+@inject NavigationManager NavigationManager
+
+@inject GlobalState GlobalState
+@using System.Text.Json
+@using Todo.Data
+@inject IJSRuntime JSRuntime
+
+
+
+<h1 class="mb-4">Dashboard</h1>
+
+<h2 class="mb-3">Summary</h2>
+<div class="row mb-5">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-success shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Total Inflows</h5>
+                <p class="card-text display-6">@InflowsTotal.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card text-white bg-danger shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Total Outflows</h5>
+                <p class="card-text display-6">@OutflowsTotal.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12 mb-3">
+        <div class="card text-white bg-primary shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Net Balance</h5>
+                <p class="card-text display-6">@NetBalance.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-3">Transaction Details</h2>
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <h3>Transaction Pie Chart</h3>
+        <canvas id="transactionsChart" class="mb-3"></canvas>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <h4>Filter <span style="color: green;">Inflows</span></h4>
+        <div class="mb-2">
+            <select @bind="InflowsTagFilter" class="form-control">
+                <option value="">All Tags</option>
+                @foreach (var tag in Inflows.Select(t => t.Tag).Distinct())
+                {
+                    <option value="@tag">@tag</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-primary" @onclick="ApplyInflowsFilter">Apply Filter</button>
+    </div>
+
+    <div class="col-lg-6">
+        <h4>Filter <span style="color: red;">Outflows</span></h4>
+        <div class="mb-2">
+            <select @bind="OutflowsTagFilter" class="form-control">
+                <option value="">All Tags</option>
+                @foreach (var tag in Outflows.Select(t => t.Tag).Distinct())
+                {
+                    <option value="@tag">@tag</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-primary" @onclick="ApplyOutflowsFilter">Apply Filter</button>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Inflows Section -->
+    <div class="col-lg-6 mb-4">
+        <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px;">
+            <h3 style="color: green;">Inflows</h3>
+            <table class="table table-bordered table-hover table-sm">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Notes</th>
+                        <th scope="col">Tag</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transaction in FilteredInflows.Any() ? FilteredInflows : Inflows)
+                    {
+                        <tr>
+                            <td>@transaction.Amount</td>
+                            <td>@transaction.Notes</td>
+                            <td>@transaction.Tag</td>
+                            <td>@transaction.DueDate.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Outflows Section -->
+    <div class="col-lg-6 mb-4">
+        <div style="background-color: #ffebee; padding: 20px; border-radius: 8px;">
+            <h3 style="color: red;">Outflows</h3>
+            <table class="table table-bordered table-hover table-sm">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Notes</th>
+                        <th scope="col">Tag</th>
+                        <th scope="col">Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transaction in FilteredOutflows.Any() ? FilteredOutflows : Outflows)
+                    {
+                        <tr>
+                            <td>@transaction.Amount</td>
+                            <td>@transaction.Notes</td>
+                            <td>@transaction.Tag</td>
+                            <td>@transaction.DueDate.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div style="background-color: #b1d1ec; padding: 20px; border-radius: 8px;">
+        
+        <h3>Debts</h3>
+        <table class="table table-bordered table-hover table-sm">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Transaction Type</th>
+                    <th scope="col">Source of Debts</th>
+                    <th scope="col">Debt Amount</th>
+                    <th scope="col">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var debt in debts)
+                {
+                    <tr>
+                        <td>@debt.TaskName</td>
+                        <td>@debt.SourceofDebt</td>
+                        <td>@debt.DebtAmount</td>
+                        <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+
+
+    @code {
+        private List<Debt> debts = new List<Debt>();
+        private string searchTerm = string.Empty;
+        private string _tabFilter = "All";
+        private string _sortBy = "TaskName";
+        private string _sortDirection = "ascending";
+
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadDebts();
+        }
+
+        private async Task LoadDebts()
+        {
+            // Fetching the debts from the service
+            debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
+
+            // Optionally, apply any filters based on the tab selected
+            if (_tabFilter == "Due")
+            {
+                debts = debts.Where(d => !d.IsDone).ToList();
+            }
+            else if (_tabFilter == "Done")
+            {
+                debts = debts.Where(d => d.IsDone).ToList();
+            }
+
+            // Apply the sorting after fetching the debts
+            ApplySorting();
+        }
+
+        private async Task SearchDebts()
+        {
+            if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
+            {
+                debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
+                debts = debts.Where(d => d.TaskName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                d.SourceofDebt.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                d.DebtAmount.ToString().Contains(searchTerm))
+                .ToList();
+            }
+            else
+            {
+                await LoadDebts();
+            }
+        }
+
+        private void FilterDebts(string filter)
+        {
+            _tabFilter = filter;
+            LoadDebts(); // Reload debts based on the new filter
+        }
+
+        private void SortBy(string column)
+        {
+            // Change the sorting column
+            _sortBy = column;
+            _sortDirection = _sortDirection == "ascending" ? "descending" : "ascending";
+            ApplySorting();
+        }
+
+        private void ApplySorting()
+        {
+            if (_sortBy == "TaskName")
+            {
+                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.TaskName).ToList() : debts.OrderByDescending(d => d.TaskName).ToList();
+            }
+            else if (_sortBy == "DebtAmount")
+            {
+                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DebtAmount).ToList() : debts.OrderByDescending(d => d.DebtAmount).ToList();
+            }
+            else if (_sortBy == "SourceofDebt")
+            {
+                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.SourceofDebt).ToList() : debts.OrderByDescending(d => d.SourceofDebt).ToList();
+            }
+            else if (_sortBy == "DueDate")
+            {
+                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DueDate).ToList() : debts.OrderByDescending(d => d.DueDate).ToList();
+            }
+        }
+    }
+
+
+
+@code {
+    private string InflowsDateFilter;
+    private string OutflowsDateFilter;
+    private string InflowsTagFilter = string.Empty;
+    private string OutflowsTagFilter = string.Empty;
+
+    private List<Transaction> FilteredInflows = new();
+    private List<Transaction> FilteredOutflows = new();
+    private List<Transaction> Transactions = new();
+    private List<Transaction> Inflows = new();
+    private List<Transaction> Outflows = new();
+    private List<Debt> Debts = new();
+    private decimal DebtsTotal; // New: Total debts amount for calculating total depts in net balance.
+    private decimal InflowsTotal;
+    private decimal OutflowsTotal;
+    private decimal NetBalance;
+    public static GlobalState _globalState { get; set; }
+    private List<Transaction> _todos { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+
+        FilteredInflows = Inflows;
+        FilteredOutflows = Outflows;
+        //System.Diagnostics.Debug.WriteLine("after dashboard " + _globalState.CurrentUser.Username);
+        // Ensure the current user is loaded
+        if (GlobalState.CurrentUser == null || GlobalState.CurrentUser.Id == Guid.Empty)
+        {
+            // NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        // Fetch all transactions for the current user
+        Guid userId = GlobalState.CurrentUser.Id;
+        _todos = TodosService.GetAll(userId);
+        // Transactions = TodosService.GetAll(userId);
+
+        // Fetch debts and calculate the total debt amount
+        Debts = DebtsService.GetAll(userId);
+
+
+
+
+        // Calculate net balance
+
+
+
+        Transactions =GetAll(userId);
+
+        // Filter and calculate summaries
+        Inflows = _todos.Where(t => t.TaskName == "Inflows").ToList();
+        Outflows = _todos.Where(t => t.TaskName == "Outflows").ToList();
+        DebtsTotal = Debts.Sum(d => decimal.TryParse(d.DebtAmount, out var result) ? result : 0);
+
+
+        InflowsTotal = Inflows.Sum(t => decimal.TryParse(t.Amount, out var result) ? result : 0);
+        OutflowsTotal = Outflows.Sum(t => decimal.TryParse(t.Amount, out var result) ? result : 0);
+        NetBalance = (InflowsTotal - OutflowsTotal) + DebtsTotal;
+
+    }
+
+    private void ApplyInflowsFilter()
+    {
+        // Start with all inflows
+        FilteredInflows = Inflows;
+
+        // Filter by date if a valid date is selected
+        if (!string.IsNullOrEmpty(InflowsDateFilter) && DateTime.TryParse(InflowsDateFilter, out var filterDate))
+        {
+            FilteredInflows = FilteredInflows.Where(transaction => transaction.DueDate.Date == filterDate.Date).ToList();
+        }
+
+        // Filter by tag if a tag is selected
+        if (!string.IsNullOrEmpty(InflowsTagFilter))
+        {
+            FilteredInflows = FilteredInflows.Where(transaction => transaction.Tag == InflowsTagFilter).ToList();
+        }
+    }
+
+    private void ApplyOutflowsFilter()
+    {
+        // Start with all outflows
+        FilteredOutflows = Outflows;
+
+        // Filter by date if a valid date is selected
+        if (!string.IsNullOrEmpty(OutflowsDateFilter) && DateTime.TryParse(OutflowsDateFilter, out var filterDate))
+        {
+            FilteredOutflows = FilteredOutflows.Where(transaction => transaction.DueDate.Date == filterDate.Date).ToList();
+        }
+
+        // Filter by tag if a tag is selected
+        if (!string.IsNullOrEmpty(OutflowsTagFilter))
+        {
+            FilteredOutflows = FilteredOutflows.Where(transaction => transaction.Tag == OutflowsTagFilter).ToList();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeChart();
+        }
+    }
+
+    private async Task InitializeChart()
+    {
+        var chartData = new
+        {
+            labels = new[] { "Inflows", "Outflows", "Debts" },
+            datasets = new[]
+            {
+                new
+                {
+                    data = new[] { InflowsTotal, OutflowsTotal, DebtsTotal },
+                    backgroundColor = new[] { "#28a745", "#dc3545", "#007bff" }
+                }
+            }
+        };
+
+        var chartOptions = new
+        {
+            responsive = true,
+            plugins = new
+            {
+                legend = new { position = "top" }
+            }
+        };
+
+        await JSRuntime.InvokeVoidAsync("renderPieChart", "transactionsChart", chartData, chartOptions);
+    }
+
+
+    public static List<Transaction> GetAll(Guid userId)
+    {
+        string todosFilePath = Utils.GetTodosFilePath(userId);
+        if (!File.Exists(todosFilePath))
+        {
+            return new List<Transaction>();
+        }
+
+        var json = File.ReadAllText(todosFilePath);
+        return JsonSerializer.Deserialize<List<Transaction>>(json);
+    }
+
+    // public static List<Debt> GetAll(Guid userId)
+    // {
+    //     string userDebtsFilePath = GetUserDebtsFilePath(userId);
+    //     if (!File.Exists(userDebtsFilePath))
+    //     {
+    //         return new List<Debt>();
+    //     }
+
+    //     var json = File.ReadAllText(userDebtsFilePath);
+    //     return JsonSerializer.Deserialize<List<Debt>>(json) ?? new List<Debt>();
+    // }
+}
+
+

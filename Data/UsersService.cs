@@ -4,10 +4,10 @@ namespace Todo.Data;
 
 public static class UsersService
 {
-    public const string SeedUsername = "admin";
-    public const string SeedPassword = "admin";
+    public const string SeedUsername = "User";
+    public const string SeedPassword = "User";
 
-    private static void SaveAll(List<User> users)
+    public static void SaveAll(List<User> users)
     {
         string appDataDirectoryPath = Utils.GetAppDirectoryPath();
         string appUsersFilePath = Utils.GetAppUsersFilePath();
@@ -20,6 +20,21 @@ public static class UsersService
         var json = JsonSerializer.Serialize(users);
         File.WriteAllText(appUsersFilePath, json);
     }
+
+    public static void UpdatePreferredCurrency(Guid userId, string preferredCurrency)
+    {
+        List<User> users = GetAll();
+        User user = users.FirstOrDefault(x => x.Id == userId);
+
+        if (user == null)
+        {
+            throw new Exception("User not found.");
+        }
+
+        user.PreferredCurrency = preferredCurrency;
+        SaveAll(users);
+    }
+
 
     public static List<User> GetAll()
     {
@@ -34,38 +49,38 @@ public static class UsersService
         return JsonSerializer.Deserialize<List<User>>(json);
     }
 
-    public static List<User> Create(Guid userId, string username, string password, Role role)
-    {
-        List<User> users = GetAll();
-        bool usernameExists = users.Any(x => x.Username == username);
+    //public static List<User> Create(Guid userId, string username, string password, Role role)
+    //{
+    //    List<User> users = GetAll();
+    //    bool usernameExists = users.Any(x => x.Username == username);
 
-        if (usernameExists)
-        {
-            throw new Exception("Username already exists.");
-        }
+    //    if (usernameExists)
+    //    {
+    //        throw new Exception("Username already exists.");
+    //    }
 
-        users.Add(
-            new User
-            {
-                Username = username,
-                PasswordHash = Utils.HashSecret(password),
-                Role = role,
-                CreatedBy = userId
-            }
-        );
-        SaveAll(users);
-        return users;
-    }
+    //    users.Add(
+    //        new User
+    //        {
+    //            Username = username,
+    //            PasswordHash = Utils.HashSecret(password),
+    //            Role = role,
+    //            CreatedBy = userId
+    //        }
+    //    );
+    //    SaveAll(users);
+    //    return users;
+    //}
 
-    public static void SeedUsers()
-    {
-        var users = GetAll().FirstOrDefault(x => x.Role == Role.Admin);
+    //public static void SeedUsers()
+    //{
+    //    var users = GetAll().FirstOrDefault(x => x.Role == Role.Admin);
 
-        if (users == null)
-        {
-            Create(Guid.Empty, SeedUsername, SeedPassword, Role.Admin);
-        }
-    }
+    //    if (users == null)
+    //    {
+    //        Create(Guid.Empty, SeedUsername, SeedPassword, Role.Admin);
+    //    }
+    //}
 
     public static User GetById(Guid id)
     {

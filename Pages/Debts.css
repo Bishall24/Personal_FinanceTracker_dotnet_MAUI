@@ -1,5 +1,4 @@
-﻿
-#list1 .form-control {
+﻿#list1 .form-control {
     border-color: transparent;
 }
 
@@ -15,6 +14,22 @@
 .todo-toolbar .search {
     background-color: #eff1f2;
 }
+
+/* Form Fields */
+.form-floating {
+    margin-bottom: 1rem;
+}
+
+    .form-floating input {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 0.5rem;
+    }
+
+    .form-floating label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
 
 /* Form Fields */
 .form-floating {

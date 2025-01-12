@@ -1,31 +1,115 @@
-﻿
-.login-body {
+﻿.login-body {
     display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding-top: 40px;
-    padding-bottom: 40px;
-    height: calc(100vh - 150px);
+    padding: 20px;
+    height: 100vh;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
 }
 
 .form-login {
     width: 100%;
-    max-width: 330px;
-    padding: 15px;
-    margin: auto;
+    max-width: 360px;
+    background: #ffffff;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-family: 'Roboto', sans-serif;
 }
 
-.form-login .form-floating:focus-within {
-    z-index: 2;
-}
+    .form-login h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: #333;
+    }
 
-.form-login .username {
-    margin-bottom: -1px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-}
+    .form-login .form-floating {
+        position: relative;
+        margin-bottom: 20px;
+    }
 
-.form-login .password {
-    margin-bottom: 10px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+        .form-login .form-floating input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+            .form-login .form-floating input:focus {
+                border-color: #6a11cb;
+                box-shadow: 0 0 5px rgba(106, 17, 203, 0.5);
+            }
+
+        .form-login .form-floating label {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #aaa;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-login .form-floating input:focus + label,
+        .form-login .form-floating input:not(:placeholder-shown) + label {
+            top: -10px;
+            font-size: 12px;
+            color: #6a11cb;
+        }
+
+    .form-login .username,
+    .form-login .password {
+        margin-bottom: 15px;
+    }
+
+    .form-login .btn-login {
+        width: 100%;
+        padding: 10px;
+        background: #6a11cb;
+        border: none;
+        color: #fff;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+    }
+
+        .form-login .btn-login:hover {
+            background: #2575fc;
+        }
+
+    .form-login .forgot-password {
+        text-align: right;
+        font-size: 14px;
+        margin-top: 10px;
+        color: #6a11cb;
+        text-decoration: none;
+    }
+
+        .form-login .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+@media (max-width: 480px) {
+    .form-login {
+        padding: 15px 20px;
+    }
+
+        .form-login h2 {
+            font-size: 18px;
+        }
+
+        .form-login .btn-login {
+            font-size: 14px;
+        }
 }

@@ -1,11 +1,15 @@
 ﻿@page "/login"
 @inject NavigationManager NavManager
+@inject GlobalState GlobalState
+
 
 <div class="login-body">
     <div class="form-login">
         <form class="text-center" @onsubmit="LoginHandler">
-            <img class="mb-4" src="/appicon.png" alt="" height="72">
-            <h1 class="h3 mb-3 fw-normal">Please Login</h1>
+            <img class="mb-4" src="/Images/tracker.png" alt="" height="150"> @*path for image is inside www.root*@
+
+            <h4 class="h3 mb-3 fw-normal">Welcome to Finance Tracker App</h4>
+            <h6>Please Login</h6>
             @if (_showDefaultCredentials)
             {
                 <div class="alert alert-info" role="alert">
@@ -22,6 +26,18 @@
                 <input type="password" class="form-control password" @bind="_password" placeholder="Password" />
                 <label for="floatingPassword">Password</label>
             </div>
+
+            <div class="form-floating mb-3">
+                <select class="form-control currency" @bind="_preferredCurrency">
+                    
+                    <option value="NPR">NPR</option>
+                    <option value="INR">INR</option>
+                    <option value="USD">USD</option>
+                </select>
+                <label for="preferredCurrency">Preferred Currency</label>
+            </div>
+
+
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
                 <AlertMessage Type="danger" Message="@_errorMessage" />
@@ -39,19 +55,27 @@
     private bool _showDefaultCredentials { get; set; }
     private string _username { get; set; }
     private string _password { get; set; }
+    private string _preferredCurrency { get; set; }
     private string _errorMessage = "";
 
     protected override void OnInitialized()
     {
+
+        System.Diagnostics.Debug.WriteLine($"hello debugger!");
         try
         {
             var user = UsersService.Login(UsersService.SeedUsername, UsersService.SeedPassword);
             _showDefaultCredentials = user.HasInitialPassword;
-        }
-        catch { }
 
-        _globalState.CurrentUser = null;
-        _errorMessage = "";
+
+        }
+        catch
+        {
+            _globalState.CurrentUser = null;
+            _errorMessage = "";
+        }
+
+
     }
 
     private void LoginHandler()
@@ -60,6 +84,14 @@
         {
             _errorMessage = "";
             _globalState.CurrentUser = UsersService.Login(_username, _password);
+            GlobalState.CurrentUser = _globalState.CurrentUser;
+
+            // Save preferred currency to user's data
+            if (!string.IsNullOrEmpty(_preferredCurrency))
+            {
+                UsersService.UpdatePreferredCurrency(_globalState.CurrentUser.Id, _preferredCurrency);
+            }
+
             if (_globalState.CurrentUser != null)
             {
                 NavManager.NavigateTo(_globalState.CurrentUser.HasInitialPassword ? "/change-password" : "/");
@@ -68,7 +100,22 @@
         catch (Exception e)
         {
             _errorMessage = e.Message;
-            Console.WriteLine(e);
         }
     }
+
+    public static void UpdatePreferredCurrency(Guid userId, string preferredCurrency)
+{
+        List<User> users = UsersService.GetAll(); // Use UsersService to call GetAll
+    User user = users.FirstOrDefault(x => x.Id == userId);
+
+    if (user == null)
+    {
+        throw new Exception("User not found.");
+    }
+
+    user.PreferredCurrency = preferredCurrency;
+       UsersService.SaveAll(users); // Use UsersService to call SaveAll
+}
+
+
 }

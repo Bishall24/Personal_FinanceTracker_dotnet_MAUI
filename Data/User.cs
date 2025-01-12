@@ -9,4 +9,6 @@ public class User
     public bool HasInitialPassword { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public Guid CreatedBy { get; set; }
+
+    public string PreferredCurrency { get; set; } // New property
 }

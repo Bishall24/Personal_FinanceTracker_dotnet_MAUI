@@ -1,10 +1,11 @@
+
 using System.Text.Json;
 
 namespace Todo.Data;
 
 public static class TodosService
 {
-    private static void SaveAll(Guid userId, List<TodoItem> todos)
+    private static void SaveAll(Guid userId, List<Transaction> todos)
     {
         string appDataDirectoryPath = Utils.GetAppDirectoryPath();
         string todosFilePath = Utils.GetTodosFilePath(userId);
@@ -18,41 +19,51 @@ public static class TodosService
         File.WriteAllText(todosFilePath, json);
     }
 
-    public static List<TodoItem> GetAll(Guid userId)
+    public static List<Transaction> GetAll(Guid userId)
     {
         string todosFilePath = Utils.GetTodosFilePath(userId);
         if (!File.Exists(todosFilePath))
         {
-            return new List<TodoItem>();
+            return new List<Transaction>();
         }
 
         var json = File.ReadAllText(todosFilePath);
-
-        return JsonSerializer.Deserialize<List<TodoItem>>(json);
+        return JsonSerializer.Deserialize<List<Transaction>>(json);
     }
 
-    public static List<TodoItem> Create(Guid userId, string taskName, DateTime dueDate)
+    public static List<Transaction> GetTransactionsByType(Guid userId, string transactionType)
+    {
+        List<Transaction> todos = GetAll(userId);
+        return todos.Where(t => t.TaskName == transactionType).ToList();
+    }
+
+    public static List<Transaction> Create(Guid userId, string taskName, string Amount, string Notes, string Tag, DateTime dueDate)
     {
         if (dueDate < DateTime.Today)
         {
             throw new Exception("Due date must be in the future.");
         }
 
-        List<TodoItem> todos = GetAll(userId);
-        todos.Add(new TodoItem
+        List<Transaction> todos = GetAll(userId);
+        todos.Add(new Transaction
         {
-            TaskName = taskName,
+            Id = Guid.NewGuid(),
+            TaskName = taskName, // "Inflows" or "Outflows"
+            Amount = Amount,
+            Notes = Notes,
+            Tag = Tag,
             DueDate = dueDate,
-            CreatedBy = userId
+            CreatedBy = userId,
+            CreatedAt = DateTime.Now
         });
         SaveAll(userId, todos);
         return todos;
     }
 
-    public static List<TodoItem> Delete(Guid userId, Guid id)
+    public static List<Transaction> Delete(Guid userId, Guid id)
     {
-        List<TodoItem> todos = GetAll(userId);
-        TodoItem todo = todos.FirstOrDefault(x => x.Id == id);
+        List<Transaction> todos = GetAll(userId);
+        Transaction todo = todos.FirstOrDefault(x => x.Id == id);
 
         if (todo == null)
         {
@@ -73,10 +84,10 @@ public static class TodosService
         }
     }
 
-    public static List<TodoItem> Update(Guid userId, Guid id, string taskName, DateTime dueDate, bool isDone)
+    public static List<Transaction> Update(Guid userId, Guid id, string taskName, string Amount, string Notes, string Tag, DateTime dueDate, bool isDone)
     {
-        List<TodoItem> todos = GetAll(userId);
-        TodoItem todoToUpdate = todos.FirstOrDefault(x => x.Id == id);
+        List<Transaction> todos = GetAll(userId);
+        Transaction todoToUpdate = todos.FirstOrDefault(x => x.Id == id);
 
         if (todoToUpdate == null)
         {
@@ -84,9 +95,13 @@ public static class TodosService
         }
 
         todoToUpdate.TaskName = taskName;
+        todoToUpdate.Amount = Amount;
+        todoToUpdate.Notes = Notes;
+        todoToUpdate.Tag = Tag;
         todoToUpdate.IsDone = isDone;
         todoToUpdate.DueDate = dueDate;
         SaveAll(userId, todos);
         return todos;
     }
 }
+

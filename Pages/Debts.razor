@@ -1,0 +1,412 @@
+﻿@page "/debts"
+
+<nav class="navbar navbar-light bg-light justify-content-between">
+    <h1 class="navbar-brand mb-0 h1">Debts</h1>
+    <button class="btn btn-primary" type="button" @onclick="OpenAddTodoDialog">
+        <span class="oi oi-plus" /> Add Debt
+    </button>
+</nav>
+<ul class="nav nav-tabs">
+    <li class="nav-item ">
+        <a class='nav-link btn @(_tabFilter == "All" ? "active" : "")' @onclick='()=>TabFilter("All")'>All</a>
+    </li>
+    <li class="nav-item">
+        <a class='nav-link btn @(_tabFilter == "Due" ? "active" : "")' @onclick='()=>TabFilter("Due")'>Due</a>
+    </li>
+    <li class="nav-item">
+        <a class='nav-link btn @(_tabFilter == "Done" ? "active" : "")' @onclick='()=>TabFilter("Done")'>Done</a>
+    </li>
+</ul>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <div class="d-flex">
+                    Status
+                    <a class='btn text-@(_sortBy == "status" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                    @onclick='()=>SortByHandler("status")'>
+                        <span class='oi oi-sort-@(_sortBy == "status" ? _sortDirection : "ascending")' />
+                    </a>
+                </div>
+            </th>
+            <th>
+                <div class="d-flex">
+                    <input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" />
+                    <a class='btn text-@(_sortBy == "taskName" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                    @onclick='()=>SortByHandler("taskName")'>
+                        <span class='oi oi-sort-@(_sortBy == "taskName" ? _sortDirection : "ascending")' />
+                    </a>
+                </div>
+            </th>
+            <th>
+                <div class="d-flex">
+                    Source of Debt
+                    <a class='btn text-@(_sortBy == "SourceofDebt" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                    @onclick='()=>SortByHandler("SourceofDebt")'>
+                        <span class='oi oi-sort-@(_sortBy == "SourceofDebt" ? _sortDirection : "ascending")' />
+                    </a>
+                </div>
+            </th>
+            <th>
+                <div class="d-flex">
+                    Debt Amount
+                    <a class='btn text-@(_sortBy == "DebtAmount" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                    @onclick='()=>SortByHandler("DebtAmount")'>
+                        <span class='oi oi-sort-@(_sortBy == "DebtAmount" ? _sortDirection : "ascending")' />
+                    </a>
+                </div>
+            </th>
+            @* <th>
+                 <div class="d-flex">
+                     Tag
+                     <a class='btn text-@(_sortBy == "Tag" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                        @onclick='()=>SortByHandler("Tag")'>
+                         <span class='oi oi-sort-@(_sortBy == "Tag" ? _sortDirection : "ascending")' />
+                     </a>
+                 </div>
+             </th> *@
+            <th>
+                <div class="d-flex">
+                    Due Date
+                    <a class='btn text-@(_sortBy == "dueDate" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                    @onclick='()=>SortByHandler("dueDate")'>
+                        <span class='oi oi-sort-@(_sortBy == "dueDate" ? _sortDirection : "ascending")' />
+                    </a>
+                </div>
+            </th>
+            <th>
+                <div class="d-flex">
+                    Created At
+                    <a class='btn text-@(_sortBy == "createdAt" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                    @onclick='()=>SortByHandler("createdAt")'>
+                        <span class='oi oi-sort-@(_sortBy == "createdAt" ? _sortDirection : "ascending")' />
+                    </a>
+                </div>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            IEnumerable<Debt> todoList = _todos;
+            if (_sortBy == "status")
+            {
+                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.IsDone) : todoList.OrderByDescending(t =>
+                t.IsDone);
+            }
+            else if (_sortBy == "taskName")
+            {
+                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.TaskName) : todoList.OrderByDescending(t =>
+                t.TaskName);
+            }
+            else if (_sortBy == "DebtAmount")
+            {
+                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.SourceofDebt) : todoList.OrderByDescending(t =>
+                t.DebtAmount);
+            }
+            else if (_sortBy == "Notes")
+            {
+                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.DebtAmount) : todoList.OrderByDescending(t =>
+                t.DebtAmount);
+            }
+
+            else if (_sortBy == "dueDate")
+            {
+                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.DueDate) : todoList.OrderByDescending(t =>
+                t.DueDate);
+            }
+            else if (_sortBy == "createdAt")
+            {
+                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.CreatedAt) : todoList.OrderByDescending(t =>
+                t.CreatedAt);
+            }
+
+            if (_tabFilter == "Due")
+            {
+                todoList = todoList.Where(t => !t.IsDone);
+            }
+            else if (_tabFilter == "Done")
+            {
+                todoList = todoList.Where(t => t.IsDone);
+            }
+
+            foreach (var Debt in todoList)
+            {
+                <tr>
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input me-0" type="checkbox" checked="@Debt.IsDone"
+                            @onchange='()=>ToggleDone(Debt)' />
+                        </div>
+                    </td>
+                    <td class='@(Debt.IsDone ? "text-decoration-line-through" : "")'>@Debt.TaskName</td>
+                    <td class='@(Debt.IsDone ? "text-decoration-line-through" : "")'>@Debt.SourceofDebt</td>
+                    <td class='@(Debt.IsDone ? "text-decoration-line-through" : "")'>@Debt.DebtAmount</td>
+
+                    <td>
+                        @{
+                            bool isToday = !Debt.IsDone && Debt.DueDate == DateTime.Today;
+                            bool isOlder = !Debt.IsDone && Debt.DueDate < DateTime.Today;
+                            <p class='small mb-0 @(isToday ? "text-warning" : isOlder ? "text-danger" : "")'>
+                                @if (isToday || isOlder)
+                                {
+                                    <span class="oi oi-warning mr-3" />
+                                }
+                                @Debt.DueDate.ToString("MMM dd, yyyy")
+                            </p>
+                        }
+                    </td>
+                    <td>
+                        <p class="small mb-0">
+                            @Debt.CreatedAt.ToString("MMM dd, yyyy h:mm tt")
+                        </p>
+                    </td>
+                    <td>
+                        <button disabled="@Debt.IsDone" class="btn btn-outline-secondary" type="button"
+                        @onclick="()=>OpenEditTodoDialog(Debt)">
+                            <span class="oi oi-pencil" /> Edit
+                        </button>
+                        <button class="btn btn-outline-danger" type="button" @onclick="()=>OpenDeleteTodoDialog(Debt)">
+                            <span class="oi oi-delete" /> Clear
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<h3>Cleared Debts</h3>
+@if (_deletedDebts.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Task Name</th>
+                <th>Source of Debt</th>
+                <th>Debt Amount</th>
+                <th>Due Date</th>
+                <th>Deleted At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var debt in _deletedDebts)
+            {
+                <tr>
+                    <td>@debt.TaskName</td>
+                    <td>@debt.SourceofDebt</td>
+                    <td>@debt.DebtAmount</td>
+                    <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
+                    <td>@DateTime.Now.ToString("MMM dd, yyyy h:mm tt")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No debts have been Cleared yet.</p>
+}
+
+
+@if (_showEditTodoDialog)
+{
+    <ModalDialog Title="@_dialogTitle" OnClose="@OnEditTodoDialogClose" OkLabel="@_dialogOkLabel">
+        <div class="form-floating">
+            <input id="TransactionType" type="text" class="form-control" @bind="_todoModel.TaskName" placeholder=" Transaction Type" />
+            <label for="TransactionType">Transaction Type</label>
+        </div>
+        <div class="form-floating">
+            <input id="SourceofDebt" type="text" class="form-control" @bind="_todoModel.SourceofDebt" placeholder="Amount" />
+            <label for="SourceofDebt">Source of Debt</label>
+        </div>
+        <div class="form-floating">
+            <input id="DebtAmount" type="text" class="form-control" @bind="_todoModel.DebtAmount" placeholder="DebtAmount" />
+            <label for="DebtAmount">Debt Amount</label>
+        </div>
+
+        <div class="form-floating">
+            <label for="dueDate">Due Date</label>
+            <input id="dueDate" type="date" min='@DateTime.Today.ToString("yyyy-MM-dd")'
+            value='@_todoModel.DueDate.ToString("yyyy-MM-dd")' @onchange="updateDate" class="form-control text-left"
+            placeholder="Due Date">
+        </div>
+
+        @if (!string.IsNullOrEmpty(_editTodoErrorMessage))
+        {
+            <AlertMessage Type="danger" Message="@_editTodoErrorMessage" />
+        }
+    </ModalDialog>
+}
+
+@if (_showDeleteTodoDialog)
+{
+    <ModalDialog Title="Delete Todo" OnClose="@OnDeleteTodoDialogClose" OkLabel="Confirm">
+        <p>Are you sure you want to clear the debt <strong>@_deleteTodo.TaskName, @_deleteTodo.SourceofDebt, @_deleteTodo.DebtAmount </strong> the debts?</p>
+        @* <p>Are you sure you want to delete <strong>@_deleteTodo.Amount</strong> amount?</p>
+    <p>Are you sure you want to delete <strong>@_deleteTodo.Notes</strong> notes?</p>
+    <p>Are you sure you want to delete <strong>@_deleteTodo.Tag</strong> tag?</p> *@
+        @if (!string.IsNullOrEmpty(_deleteTodoErrorMessage))
+        {
+            <AlertMessage Type="danger" Message="@_deleteTodoErrorMessage" />
+        }
+    </ModalDialog>
+}
+
+@code {
+    [CascadingParameter]
+    private GlobalState _globalState { get; set; }
+    private bool _showEditTodoDialog { get; set; }
+    private bool _showDeleteTodoDialog { get; set; }
+    private List<Debt> _todos { get; set; }
+    private List<Debt> _deletedDebts = new List<Debt>();
+
+    private Debt _deleteTodo { get; set; }
+    private string _dialogTitle { get; set; }
+    private string _dialogOkLabel { get; set; }
+    private string _editTodoErrorMessage { get; set; }
+    private string _deleteTodoErrorMessage { get; set; }
+    private Debt _todoModel { get; set; }
+    private string _tabFilter = "All";
+    private string _sortBy = "dueDate";
+    private string _sortDirection = "ascending";
+
+    protected override void OnInitialized()
+    {
+        _todos = DebtsService.GetAll(_globalState.CurrentUser.Id);
+        // _todos = DebtsService.GetAll(_globalState.CurrentUser.Id);
+        try
+        {
+            _deletedDebts = DebtsService.GetDeletedDebts(); // Initialize deleted debts
+        }
+        catch (Exception e)
+        {
+            _deletedDebts = new List<Debt>();
+        }
+        
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+    }
+
+
+    private void SortByHandler(string sortByName)
+    {
+        if (_sortBy == sortByName)
+        {
+            _sortDirection = _sortDirection == "ascending" ? "descending" : "ascending";
+        }
+        else
+        {
+            _sortBy = sortByName;
+            _sortDirection = "ascending";
+        }
+    }
+
+    private void OpenAddTodoDialog()
+    {
+        _dialogTitle = "Add Transaction";
+        _dialogOkLabel = "Add";
+        _todoModel = new Debt();
+        _todoModel.Id = Guid.Empty;
+        _showEditTodoDialog = true;
+    }
+
+    private void SearchTaskName(ChangeEventArgs e)
+    {
+        var searchTerm = e.Value.ToString();
+        if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
+        {
+            _todos = DebtsService.GetAll(_globalState.CurrentUser.Id).Where(t =>
+            t.TaskName.ToLower().Contains(searchTerm.ToLower())).ToList();
+        }
+        else
+        {
+            _todos = DebtsService.GetAll(_globalState.CurrentUser.Id);
+        }
+    }
+
+    private void OpenEditTodoDialog(Debt editTodo)
+    {
+        _dialogTitle = "Edit Todo";
+        _dialogOkLabel = "Save";
+
+        _todoModel = editTodo;
+
+        _showEditTodoDialog = true;
+    }
+
+    private void OpenDeleteTodoDialog(Debt todoItem)
+    {
+        _deleteTodo = todoItem;
+        _showDeleteTodoDialog = true;
+    }
+
+    private void updateDate(ChangeEventArgs e)
+    {
+        _todoModel.DueDate = DateTime.Parse(e.Value.ToString());
+    }
+    private void OnEditTodoDialogClose(bool isCancel)
+    {
+        if (isCancel)
+        {
+            _showEditTodoDialog = false;
+        }
+        else
+        {
+            try
+            {
+                _editTodoErrorMessage = "";
+                if (_todoModel.Id == Guid.Empty)
+                {
+                    _todos = DebtsService.Create(_globalState.CurrentUser.Id, _todoModel.TaskName, _todoModel.SourceofDebt, _todoModel.DebtAmount, _todoModel.DueDate);
+                }
+                else
+                {
+                    _todos = DebtsService.Update(_globalState.CurrentUser.Id, _todoModel.Id, _todoModel.TaskName, _todoModel.SourceofDebt, _todoModel.DebtAmount, _todoModel.DueDate,
+                    _todoModel.IsDone);
+                }
+                _showEditTodoDialog = false;
+            }
+            catch (Exception e)
+            {
+                _editTodoErrorMessage = e.Message;
+            }
+        }
+    }
+    private void OnDeleteTodoDialogClose(bool isCancel)
+    {
+        if (isCancel)
+        {
+            _showDeleteTodoDialog = false;
+            _deleteTodo = null;
+        }
+        else
+        {
+            try
+            {
+                _deleteTodoErrorMessage = "";
+                _deletedDebts.Add(_deleteTodo); // Add to deleted debts
+                _todos = DebtsService.Delete(_globalState.CurrentUser.Id, _deleteTodo.Id);
+                _showDeleteTodoDialog = false;
+                _deleteTodo = null;
+            }
+            catch (Exception e)
+            {
+                _deleteTodoErrorMessage = e.Message;
+            }
+        }
+    }
+    private void TabFilter(string status)
+    {
+        _tabFilter = status;
+    }
+    private void ToggleDone(Debt todo)
+    {
+        todo.IsDone = !todo.IsDone;
+        _todos = DebtsService.Update(_globalState.CurrentUser.Id, todo.Id, todo.TaskName, todo.SourceofDebt, todo.DebtAmount, todo.DueDate, todo.IsDone);
+    }
+}

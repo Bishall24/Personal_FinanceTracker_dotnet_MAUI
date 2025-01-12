@@ -1,16 +1,20 @@
+﻿/* General Navbar Styles */
 .navbar-toggler {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Top row styling */
 .top-row {
     height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
+/* Navbar brand */
 .navbar-brand {
     font-size: 1.1rem;
 }
 
+/* Icon styling */
 .oi {
     width: 2rem;
     font-size: 1.1rem;
@@ -18,11 +22,14 @@
     top: -2px;
 }
 
+/* Nav item styling */
 .nav-item {
     font-size: 0.9rem;
     padding-bottom: 0.5rem;
+    position: relative;
 }
 
+    /* First and last nav items */
     .nav-item:first-of-type {
         padding-top: 1rem;
     }
@@ -31,32 +38,108 @@
         padding-bottom: 1rem;
     }
 
-    .nav-item ::deep a {
+    /* Nav link styles */
+    .nav-item a {
         color: #d7d7d7;
         border-radius: 4px;
         height: 3rem;
         display: flex;
         align-items: center;
         line-height: 3rem;
+        padding: 0 1rem;
     }
 
-.nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.25);
-    color: white;
+        /* Active and hover states for links */
+        .nav-item a.active,
+        .nav-item a:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+    /* Dropdown menu container */
+    .nav-item .dropdown-menu {
+        display: none;
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.8);
+        border-radius: 4px;
+        top: 3rem; /* Adjust dropdown position */
+        left: 0;
+        width: 100%;
+        padding: 0.5rem 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+        /* Dropdown items */
+        .nav-item .dropdown-menu a {
+            color: #d7d7d7;
+            padding: 1rem;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+            /* Dropdown item hover effect */
+            .nav-item .dropdown-menu a:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+
+    /* Show the dropdown when it's active */
+    .nav-item:hover .dropdown-menu {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+/* Media query for mobile and tablet devices */
+@media (max-width: 640px) {
+    .navbar-toggler {
+        display: block;
+    }
+
+    .collapse {
+        display: none; /* Hide the sidebar menu by default on smaller screens */
+    }
+
+    .navbar-nav {
+        display: none; /* Hide the navbar options */
+    }
+
+        .navbar-nav.active {
+            display: block; /* Show navbar options when toggled */
+        }
+
+    /* Dropdown menu styles for smaller screens */
+    .nav-item .dropdown-menu {
+        width: 100%; /* Full width for dropdown on mobile */
+        position: relative;
+    }
+
+        .nav-item .dropdown-menu a {
+            font-size: 1rem;
+            padding: 0.75rem;
+        }
 }
 
-.nav-item ::deep a:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
-
+/* Media query for screens larger than 640px */
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
     }
 
     .collapse {
-        /* Never collapse the sidebar for wide screens */
         display: block;
+    }
+
+    .navbar-nav {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    /* Keep dropdown styling for larger screens */
+    .nav-item:hover .dropdown-menu {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
     }
 }
