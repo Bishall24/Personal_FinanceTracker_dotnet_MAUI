@@ -141,7 +141,7 @@ public static class DebtsService
 
         if (!File.Exists(fullPath))
         {
-            System.Diagnostics.Debug.WriteLine($"Deleted Debts File Path: {fullPath}");
+            
 
             return new List<Debt>();
         }
@@ -149,7 +149,7 @@ public static class DebtsService
         var json = File.ReadAllText(fullPath);
         
         return JsonSerializer.Deserialize<List<Debt>>(json) ?? new List<Debt>();
+        System.Diagnostics.Debug.WriteLine($"Deleted Debts File Path: {fullPath}");
     }
 }
 
-/////Helllllppoooooo checking for git updateeee////////////////
