@@ -92,7 +92,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var transaction in FilteredInflows.Any() ? FilteredInflows : Inflows)
+                    @foreach (var transaction in (FilteredInflows.Any() ? FilteredInflows : Inflows)
+                    .OrderByDescending(t => t.Amount).Take(5))
                     {
                         <tr>
                             <td>@transaction.Amount</td>
@@ -120,7 +121,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var transaction in FilteredOutflows.Any() ? FilteredOutflows : Outflows)
+                    @foreach (var transaction in (FilteredOutflows.Any() ? FilteredOutflows : Outflows)
+                    .OrderByDescending(t => t.Amount).Take(5))
                     {
                         <tr>
                             <td>@transaction.Amount</td>

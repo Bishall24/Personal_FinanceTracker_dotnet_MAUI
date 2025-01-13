@@ -177,33 +177,36 @@
     </tbody>
 </table>
 
-<h3>Cleared Debts</h3>
+<h3> <span style="color: blue;">Cleared Debts</span> </h3>
 @if (_deletedDebts.Count > 0)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Task Name</th>
-                <th>Source of Debt</th>
-                <th>Debt Amount</th>
-                <th>Due Date</th>
-                <th>Deleted At</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var debt in _deletedDebts)
-            {
-                <tr>
-                    <td>@debt.TaskName</td>
-                    <td>@debt.SourceofDebt</td>
-                    <td>@debt.DebtAmount</td>
-                    <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
-                    <td>@DateTime.Now.ToString("MMM dd, yyyy h:mm tt")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    @if (_deletedDebts.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Source of Debt</th>
+                        <th>Debt Amount</th>
+                        <th>Due Date</th>
+                        <th class="text-center">Deleted At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var debt in _deletedDebts)
+                    {
+                        <tr>
+                            <td>@debt.TaskName</td>
+                            <td>@debt.SourceofDebt</td>
+                            <td>@debt.DebtAmount</td>
+                            <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">@DateTime.Now.ToString("MMM dd, yyyy h:mm tt")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 else
 {
     <p>No debts have been Cleared yet.</p>

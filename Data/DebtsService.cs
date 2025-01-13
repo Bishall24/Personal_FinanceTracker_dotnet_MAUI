@@ -63,9 +63,35 @@ public static class DebtsService
         return debts;
     }
 
+    //public static List<Debt> Delete(Guid userId, Guid id)
+    //{
+    //    List<Debt> debts = GetAll(userId);
+    //    Debt debt = debts.FirstOrDefault(x => x.Id == id);
+
+    //    if (debt == null)
+    //    {
+    //        throw new Exception("Debt not found.");
+    //    }
+
+    //    // Remove from the current debts list
+    //    debts.Remove(debt);
+    //    debt.IsDone=true;
+    //    debts.Add(debt);
+    //    SaveAll(userId, debts);
+
+    //    // Save to deleted debts
+    //    List<Debt> deletedDebts = GetDeletedDebts();
+    //    deletedDebts.Add(debt);
+    //    SaveDeletedDebts(deletedDebts);
+
+    //    return debts;
+    //}
+
     public static List<Debt> Delete(Guid userId, Guid id)
     {
+        // Fetch all debts for the user
         List<Debt> debts = GetAll(userId);
+        // Find the specific debt to clear
         Debt debt = debts.FirstOrDefault(x => x.Id == id);
 
         if (debt == null)
@@ -73,19 +99,22 @@ public static class DebtsService
             throw new Exception("Debt not found.");
         }
 
-        // Remove from the current debts list
+        // Remove the debt from the current debts list
         debts.Remove(debt);
-        debt.IsDone=true;
-        debts.Add(debt);
+
+        // Save the updated debts list to the file
         SaveAll(userId, debts);
 
-        // Save to deleted debts
+        // Mark the debt as done and save it to the deleted debts list
+        debt.IsDone = true;
         List<Debt> deletedDebts = GetDeletedDebts();
         deletedDebts.Add(debt);
         SaveDeletedDebts(deletedDebts);
 
+        // Return the updated debts list
         return debts;
     }
+
 
     public static void DeleteByUserId(Guid userId)
     {
