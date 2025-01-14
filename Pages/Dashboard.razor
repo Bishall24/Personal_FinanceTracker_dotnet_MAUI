@@ -93,7 +93,8 @@
                 </thead>
                 <tbody>
                     @foreach (var transaction in (FilteredInflows.Any() ? FilteredInflows : Inflows)
-                    .OrderByDescending(t => t.Amount).Take(5))
+                    .OrderByDescending(t => decimal.TryParse(t.Amount, out var parsedAmount) ? parsedAmount : 0)
+                    .Take(5)) // Limiting to top 5 after sorting
                     {
                         <tr>
                             <td>@transaction.Amount</td>
@@ -140,114 +141,114 @@
 <div class="row">
     <div class="col-lg-12">
         <div style="background-color: #b1d1ec; padding: 20px; border-radius: 8px;">
-        
-        <h3>Debts</h3>
-        <table class="table table-bordered table-hover table-sm">
-            <thead class="thead-light">
-                <tr>
-                    <th scope="col">Transaction Type</th>
-                    <th scope="col">Source of Debts</th>
-                    <th scope="col">Debt Amount</th>
-                    <th scope="col">Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var debt in debts)
-                {
+
+            <h3>Debts</h3>
+            <table class="table table-bordered table-hover table-sm">
+                <thead class="thead-light">
                     <tr>
-                        <td>@debt.TaskName</td>
-                        <td>@debt.SourceofDebt</td>
-                        <td>@debt.DebtAmount</td>
-                        <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
+
+                        <th scope="col">Source of Debts</th>
+                        <th scope="col">Debt Amount</th>
+                        <th scope="col">Date</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var debt in debts)
+                    {
+                        <tr>
+
+                            <td>@debt.SourceofDebt</td>
+                            <td>@debt.DebtAmount</td>
+                            <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 
-    @code {
-        private List<Debt> debts = new List<Debt>();
-        private string searchTerm = string.Empty;
-        private string _tabFilter = "All";
-        private string _sortBy = "TaskName";
-        private string _sortDirection = "ascending";
+@code {
+    private List<Debt> debts = new List<Debt>();
+    private string searchTerm = string.Empty;
+    private string _tabFilter = "All";
+    private string _sortBy = "TaskName";
+    private string _sortDirection = "ascending";
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDebts();
+    }
+
+    private async Task LoadDebts()
+    {
+        // Fetching the debts from the service
+        debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
+
+        // Optionally, apply any filters based on the tab selected
+        if (_tabFilter == "Due")
+        {
+            debts = debts.Where(d => !d.IsDone).ToList();
+        }
+        else if (_tabFilter == "Done")
+        {
+            debts = debts.Where(d => d.IsDone).ToList();
+        }
+
+        // Apply the sorting after fetching the debts
+        ApplySorting();
+    }
+
+    private async Task SearchDebts()
+    {
+        if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
+        {
+            debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
+            debts = debts.Where(d => d.TaskName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            d.SourceofDebt.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            d.DebtAmount.ToString().Contains(searchTerm))
+            .ToList();
+        }
+        else
         {
             await LoadDebts();
         }
+    }
 
-        private async Task LoadDebts()
+    private void FilterDebts(string filter)
+    {
+        _tabFilter = filter;
+        LoadDebts(); // Reload debts based on the new filter
+    }
+
+    private void SortBy(string column)
+    {
+        // Change the sorting column
+        _sortBy = column;
+        _sortDirection = _sortDirection == "ascending" ? "descending" : "ascending";
+        ApplySorting();
+    }
+
+    private void ApplySorting()
+    {
+        if (_sortBy == "TaskName")
         {
-            // Fetching the debts from the service
-            debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
-
-            // Optionally, apply any filters based on the tab selected
-            if (_tabFilter == "Due")
-            {
-                debts = debts.Where(d => !d.IsDone).ToList();
-            }
-            else if (_tabFilter == "Done")
-            {
-                debts = debts.Where(d => d.IsDone).ToList();
-            }
-
-            // Apply the sorting after fetching the debts
-            ApplySorting();
+            debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.TaskName).ToList() : debts.OrderByDescending(d => d.TaskName).ToList();
         }
-
-        private async Task SearchDebts()
+        else if (_sortBy == "DebtAmount")
         {
-            if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
-            {
-                debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
-                debts = debts.Where(d => d.TaskName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                d.SourceofDebt.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                d.DebtAmount.ToString().Contains(searchTerm))
-                .ToList();
-            }
-            else
-            {
-                await LoadDebts();
-            }
+            debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DebtAmount).ToList() : debts.OrderByDescending(d => d.DebtAmount).ToList();
         }
-
-        private void FilterDebts(string filter)
+        else if (_sortBy == "SourceofDebt")
         {
-            _tabFilter = filter;
-            LoadDebts(); // Reload debts based on the new filter
+            debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.SourceofDebt).ToList() : debts.OrderByDescending(d => d.SourceofDebt).ToList();
         }
-
-        private void SortBy(string column)
+        else if (_sortBy == "DueDate")
         {
-            // Change the sorting column
-            _sortBy = column;
-            _sortDirection = _sortDirection == "ascending" ? "descending" : "ascending";
-            ApplySorting();
+            debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DueDate).ToList() : debts.OrderByDescending(d => d.DueDate).ToList();
         }
-
-        private void ApplySorting()
-        {
-            if (_sortBy == "TaskName")
-            {
-                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.TaskName).ToList() : debts.OrderByDescending(d => d.TaskName).ToList();
-            }
-            else if (_sortBy == "DebtAmount")
-            {
-                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DebtAmount).ToList() : debts.OrderByDescending(d => d.DebtAmount).ToList();
-            }
-            else if (_sortBy == "SourceofDebt")
-            {
-                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.SourceofDebt).ToList() : debts.OrderByDescending(d => d.SourceofDebt).ToList();
-            }
-            else if (_sortBy == "DueDate")
-            {
-                debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DueDate).ToList() : debts.OrderByDescending(d => d.DueDate).ToList();
-            }
-        }
+    }
     }
 
 
@@ -303,8 +304,29 @@
         Transactions =GetAll(userId);
 
         // Filter and calculate summaries
-        Inflows = _todos.Where(t => t.TaskName == "Inflows").ToList();
-        Outflows = _todos.Where(t => t.TaskName == "Outflows").ToList();
+        Inflows = _todos
+    .Where(t => t.TaskName == "Inflows")
+    .Select(t => new Transaction
+        {
+            Amount = decimal.TryParse(t.Amount, out var result) ? result.ToString() : "0", // Ensure Amount is numeric
+            Notes = t.Notes,
+            Tag = t.Tag,
+            DueDate = t.DueDate
+        })
+    .OrderByDescending(t => decimal.Parse(t.Amount)) // Sort numerically by Amount
+    .ToList();
+
+        Outflows = _todos
+    .Where(t => t.TaskName == "Outflows")
+    .Select(t => new Transaction
+        {
+            Amount = decimal.TryParse(t.Amount, out var result) ? result.ToString() : "0",
+            Notes = t.Notes,
+            Tag = t.Tag,
+            DueDate = t.DueDate
+        })
+    .OrderByDescending(t => decimal.Parse(t.Amount)) // Sort numerically by Amount
+    .ToList();
         DebtsTotal = Debts.Sum(d => decimal.TryParse(d.DebtAmount, out var result) ? result : 0);
 
 
@@ -316,8 +338,9 @@
 
     private void ApplyInflowsFilter()
     {
-        // Start with all inflows
+
         FilteredInflows = Inflows;
+
 
         // Filter by date if a valid date is selected
         if (!string.IsNullOrEmpty(InflowsDateFilter) && DateTime.TryParse(InflowsDateFilter, out var filterDate))
@@ -330,6 +353,12 @@
         {
             FilteredInflows = FilteredInflows.Where(transaction => transaction.Tag == InflowsTagFilter).ToList();
         }
+
+        // Ensure numeric sorting by parsing Amount
+        FilteredInflows = FilteredInflows
+            .OrderByDescending(transaction => decimal.TryParse(transaction.Amount, out var parsedAmount) ? parsedAmount : 0)
+            .Take(5) // Limit to top 5
+            .ToList();
     }
 
     private void ApplyOutflowsFilter()

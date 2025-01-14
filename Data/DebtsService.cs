@@ -147,13 +147,17 @@ public static class DebtsService
     private static void SaveDeletedDebts(List<Debt> deletedDebts)
     {
 
+        System.Diagnostics.Debug.WriteLine($"Number of deleted debts: {deletedDebts.Count}");
+
         string appDataDirectoryPath = Utils.GetAppDirectoryPath();
+        System.Diagnostics.Debug.WriteLine($"App Directory Path in SaveDeletedDebts: {appDataDirectoryPath}");
         string fullPath = Path.Combine(appDataDirectoryPath, DeletedDebtsFilePath);
 
         if (!Directory.Exists(appDataDirectoryPath))
         {
-           
+            System.Diagnostics.Debug.WriteLine("Directory does not exist. Creating...");
             Directory.CreateDirectory(appDataDirectoryPath);
+            System.Diagnostics.Debug.WriteLine("Directory created.");
         }
 
         var json = JsonSerializer.Serialize(deletedDebts, new JsonSerializerOptions { WriteIndented = true });
@@ -167,6 +171,8 @@ public static class DebtsService
 
 
         string fullPath = Path.Combine(Utils.GetAppDirectoryPath(), DeletedDebtsFilePath);
+        // Debug log added here to output the resolved path
+        System.Diagnostics.Debug.WriteLine($"Deleted Debts File Path: {fullPath}");
 
         if (!File.Exists(fullPath))
         {
@@ -180,5 +186,15 @@ public static class DebtsService
         return JsonSerializer.Deserialize<List<Debt>>(json) ?? new List<Debt>();
         System.Diagnostics.Debug.WriteLine($"Deleted Debts File Path: {fullPath}");
     }
+
+    public class DebtStateService
+    {
+        private List<Debt> _deletedDebts = new List<Debt>();
+
+        public List<Debt> GetDeletedDebts() => _deletedDebts;
+
+        public void ClearDeletedDebts() => _deletedDebts.Clear();
+    }
+
 }
 

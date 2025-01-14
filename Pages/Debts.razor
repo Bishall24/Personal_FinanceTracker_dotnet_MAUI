@@ -6,7 +6,7 @@
         <span class="oi oi-plus" /> Add Debt
     </button>
 </nav>
-<ul class="nav nav-tabs">
+@* <ul class="nav nav-tabs">
     <li class="nav-item ">
         <a class='nav-link btn @(_tabFilter == "All" ? "active" : "")' @onclick='()=>TabFilter("All")'>All</a>
     </li>
@@ -16,12 +16,12 @@
     <li class="nav-item">
         <a class='nav-link btn @(_tabFilter == "Done" ? "active" : "")' @onclick='()=>TabFilter("Done")'>Done</a>
     </li>
-</ul>
+</ul> *@
 
 <table class="table">
     <thead>
         <tr>
-            <th>
+            @* <th>
                 <div class="d-flex">
                     Status
                     <a class='btn text-@(_sortBy == "status" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
@@ -29,10 +29,10 @@
                         <span class='oi oi-sort-@(_sortBy == "status" ? _sortDirection : "ascending")' />
                     </a>
                 </div>
-            </th>
+            </th> *@
             <th>
                 <div class="d-flex">
-                    <input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" />
+                    
                     <a class='btn text-@(_sortBy == "taskName" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
                     @onclick='()=>SortByHandler("taskName")'>
                         <span class='oi oi-sort-@(_sortBy == "taskName" ? _sortDirection : "ascending")' />
@@ -57,6 +57,7 @@
                     </a>
                 </div>
             </th>
+            
             @* <th>
                  <div class="d-flex">
                      Tag
@@ -84,7 +85,7 @@
                     </a>
                 </div>
             </th>
-            <th></th>
+            <th><input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" /></th>
         </tr>
     </thead>
     <tbody>
@@ -95,11 +96,11 @@
                 todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.IsDone) : todoList.OrderByDescending(t =>
                 t.IsDone);
             }
-            else if (_sortBy == "taskName")
-            {
-                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.TaskName) : todoList.OrderByDescending(t =>
-                t.TaskName);
-            }
+            // else if (_sortBy == "taskName")
+            // {
+            //     todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.TaskName) : todoList.OrderByDescending(t =>
+            //     t.TaskName);
+            // }
             else if (_sortBy == "DebtAmount")
             {
                 todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.SourceofDebt) : todoList.OrderByDescending(t =>
@@ -140,7 +141,7 @@
                             @onchange='()=>ToggleDone(Debt)' />
                         </div>
                     </td>
-                    <td class='@(Debt.IsDone ? "text-decoration-line-through" : "")'>@Debt.TaskName</td>
+                  
                     <td class='@(Debt.IsDone ? "text-decoration-line-through" : "")'>@Debt.SourceofDebt</td>
                     <td class='@(Debt.IsDone ? "text-decoration-line-through" : "")'>@Debt.DebtAmount</td>
 
@@ -185,7 +186,7 @@
             <table class="table table-striped table-bordered table-hover">
                 <thead class="thead-dark">
                     <tr>
-                        <th>Task Name</th>
+                        @* <th>Task Name</th> *@
                         <th>Source of Debt</th>
                         <th>Debt Amount</th>
                         <th>Due Date</th>
@@ -193,10 +194,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var debt in _deletedDebts)
+                    @foreach (var debt in _deletedDebts.TakeLast(5))
                     {
                         <tr>
-                            <td>@debt.TaskName</td>
+                            @* <td>@debt.TaskName</td> *@
                             <td>@debt.SourceofDebt</td>
                             <td>@debt.DebtAmount</td>
                             <td>@debt.DueDate.ToString("MMM dd, yyyy")</td>
@@ -216,10 +217,10 @@ else
 @if (_showEditTodoDialog)
 {
     <ModalDialog Title="@_dialogTitle" OnClose="@OnEditTodoDialogClose" OkLabel="@_dialogOkLabel">
-        <div class="form-floating">
+        @* <div class="form-floating">
             <input id="TransactionType" type="text" class="form-control" @bind="_todoModel.TaskName" placeholder=" Transaction Type" />
             <label for="TransactionType">Transaction Type</label>
-        </div>
+        </div> *@
         <div class="form-floating">
             <input id="SourceofDebt" type="text" class="form-control" @bind="_todoModel.SourceofDebt" placeholder="Amount" />
             <label for="SourceofDebt">Source of Debt</label>
@@ -363,11 +364,11 @@ else
             try
             {
                 // Validation
-                if (string.IsNullOrWhiteSpace(_todoModel.TaskName))
-                {
-                    _editTodoErrorMessage = "Task Name is required.";
-                    return;
-                }
+                // if (string.IsNullOrWhiteSpace(_todoModel.TaskName))
+                // {
+                //     _editTodoErrorMessage = "Task Name is required.";
+                //     return;
+                // }
 
                 if (string.IsNullOrWhiteSpace(_todoModel.SourceofDebt))
                 {
