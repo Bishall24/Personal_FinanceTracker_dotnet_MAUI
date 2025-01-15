@@ -1,35 +1,22 @@
 ﻿@page "/debts"
 
-<nav class="navbar navbar-light bg-light justify-content-between">
-    <h1 class="navbar-brand mb-0 h1">Debts</h1>
-    <button class="btn btn-primary" type="button" @onclick="OpenAddTodoDialog">
-        <span class="oi oi-plus" /> Add Debt
+<nav class="navbar" style="background: linear-gradient(90deg, #007BFF, #00C6FF); padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <h1 class="navbar-brand" style="color: white; font-size: 28px; font-weight: bold; margin: 0;">Debts</h1>
+    @* <input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" /> *@
+    <button class="btn btn-primary" type="button" @onclick="OpenAddTodoDialog"
+            style="background-color: #28a745; border: none; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; transition: all 0.3s ease-in-out; display: flex; align-items: center;">
+        <span class="oi oi-plus" style="margin-right: 5px; font-size: 16px;"></span> Add Debt
     </button>
 </nav>
-@* <ul class="nav nav-tabs">
-    <li class="nav-item ">
-        <a class='nav-link btn @(_tabFilter == "All" ? "active" : "")' @onclick='()=>TabFilter("All")'>All</a>
-    </li>
-    <li class="nav-item">
-        <a class='nav-link btn @(_tabFilter == "Due" ? "active" : "")' @onclick='()=>TabFilter("Due")'>Due</a>
-    </li>
-    <li class="nav-item">
-        <a class='nav-link btn @(_tabFilter == "Done" ? "active" : "")' @onclick='()=>TabFilter("Done")'>Done</a>
-    </li>
-</ul> *@
+
+
+ 
+
 
 <table class="table">
     <thead>
         <tr>
-            @* <th>
-                <div class="d-flex">
-                    Status
-                    <a class='btn text-@(_sortBy == "status" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
-                    @onclick='()=>SortByHandler("status")'>
-                        <span class='oi oi-sort-@(_sortBy == "status" ? _sortDirection : "ascending")' />
-                    </a>
-                </div>
-            </th> *@
+            
             <th>
                 <div class="d-flex">
                     
@@ -85,7 +72,7 @@
                     </a>
                 </div>
             </th>
-            <th><input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" /></th>
+            
         </tr>
     </thead>
     <tbody>
@@ -266,6 +253,9 @@ else
     private List<Debt> _todos { get; set; }
     private List<Debt> _deletedDebts = new List<Debt>();
 
+    private decimal _totalInflows;
+
+
     private Debt _deleteTodo { get; set; }
     private string _dialogTitle { get; set; }
     private string _dialogOkLabel { get; set; }
@@ -417,8 +407,13 @@ else
             try
             {
                 _deleteTodoErrorMessage = "";
+                decimal debtAmount = decimal.Parse(_deleteTodo.DebtAmount);  // Get the debt amount to subtract from inflows
+
+                // Subtract the debt amount from the total inflows
+                _totalInflows -= debtAmount;
+
                 _deletedDebts.Add(_deleteTodo); // Add to deleted debts
-                _todos = DebtsService.Delete(_globalState.CurrentUser.Id, _deleteTodo.Id);
+                _todos = DebtsService.Delete(_globalState.CurrentUser.Id, _deleteTodo.Id); // Remove the debt from the main list
                 _showDeleteTodoDialog = false;
                 _deleteTodo = null;
             }

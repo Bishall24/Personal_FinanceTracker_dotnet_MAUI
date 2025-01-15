@@ -31,3 +31,91 @@
         font-size: 0.9rem;
         color: #6c757d;
     }
+
+/* Navbar Styles */
+.navbar {
+    background: linear-gradient(90deg, #007BFF, #00C6FF);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Navbar Title */
+.navbar-brand {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Search Bar Container */
+.input-group {
+    width: 600px;
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+}
+
+/* Search Bar Icon */
+.input-group-text {
+    background-color: white;
+    border-right: none;
+    border: 1px solid #ccc;
+    border-radius: 20px 0 0 20px;
+}
+
+/* Search Bar Input */
+.search {
+    border-radius: 0 20px 20px 0;
+    border-left: none;
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+/* Add button*/
+.btn-primary {
+    background: linear-gradient(90deg, #28a745, #20c997); /* Green gradient */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+}
+
+    /* Hover Effect */
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #20c997, #28a745); /* Reverse gradient on hover */
+        transform: scale(1.05); /* Slight zoom effect */
+    }
+
+
+    /* Add Button Icon */
+    .btn-primary .oi {
+        margin-right: 5px;
+        font-size: 16px;
+    }
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+    }
+
+    .input-group {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+

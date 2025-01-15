@@ -1,5 +1,4 @@
-﻿
-@page "/dashboard"
+﻿@page "/dashboard"
 @inject NavigationManager NavigationManager
 
 @inject GlobalState GlobalState
@@ -82,6 +81,7 @@
     <div class="col-lg-6 mb-4">
         <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px;">
             <h3 style="color: green;">Inflows</h3>
+            <p style="color: green;"><strong>Top 5 transactions for Inflows</strong></p>
             <table class="table table-bordered table-hover table-sm">
                 <thead class="thead-light">
                     <tr>
@@ -112,6 +112,7 @@
     <div class="col-lg-6 mb-4">
         <div style="background-color: #ffebee; padding: 20px; border-radius: 8px;">
             <h3 style="color: red;">Outflows</h3>
+            <p style="color: red;"><strong>Top 5 transactions for Outflows</strong></p>
             <table class="table table-bordered table-hover table-sm">
                 <thead class="thead-light">
                     <tr>
@@ -123,7 +124,8 @@
                 </thead>
                 <tbody>
                     @foreach (var transaction in (FilteredOutflows.Any() ? FilteredOutflows : Outflows)
-                    .OrderByDescending(t => t.Amount).Take(5))
+                    .OrderByDescending(t => decimal.TryParse(t.Amount, out var parsedAmount) ? parsedAmount : 0)
+                    .Take(5)) // Limiting to top 5 after sorting
                     {
                         <tr>
                             <td>@transaction.Amount</td>
@@ -142,7 +144,8 @@
     <div class="col-lg-12">
         <div style="background-color: #b1d1ec; padding: 20px; border-radius: 8px;">
 
-            <h3>Debts</h3>
+            <h3 style="color: #00008b;">Debts</h3>
+            <p  style="color: #00008b;"><strong>Top 5 transactions for Debts</strong></p>
             <table class="table table-bordered table-hover table-sm">
                 <thead class="thead-light">
                     <tr>
@@ -153,7 +156,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var debt in debts)
+                    @foreach (var debt in (FilteredDebts.Any() ? FilteredDebts : debts)
+                    .OrderByDescending(d => decimal.TryParse(d.DebtAmount, out var parsedAmount) ? parsedAmount : 0)
+                    .Take(5)) // Limiting to top 5 after sorting
                     {
                         <tr>
 
@@ -184,7 +189,7 @@
     private async Task LoadDebts()
     {
         // Fetching the debts from the service
-        debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
+        debts = DebtsService.GetAll(GlobalState.CurrentUser.Id);
 
         // Optionally, apply any filters based on the tab selected
         if (_tabFilter == "Due")
@@ -204,7 +209,7 @@
     {
         if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
         {
-            debts =  DebtsService.GetAll(GlobalState.CurrentUser.Id);
+            debts = DebtsService.GetAll(GlobalState.CurrentUser.Id);
             debts = debts.Where(d => d.TaskName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
             d.SourceofDebt.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
             d.DebtAmount.ToString().Contains(searchTerm))
@@ -249,7 +254,7 @@
             debts = _sortDirection == "ascending" ? debts.OrderBy(d => d.DueDate).ToList() : debts.OrderByDescending(d => d.DueDate).ToList();
         }
     }
-    }
+}
 
 
 
@@ -265,6 +270,7 @@
     private List<Transaction> Inflows = new();
     private List<Transaction> Outflows = new();
     private List<Debt> Debts = new();
+    private List<Debt> FilteredDebts = new();
     private decimal DebtsTotal; // New: Total debts amount for calculating total depts in net balance.
     private decimal InflowsTotal;
     private decimal OutflowsTotal;
@@ -278,6 +284,7 @@
 
         FilteredInflows = Inflows;
         FilteredOutflows = Outflows;
+        FilteredDebts = debts;
         //System.Diagnostics.Debug.WriteLine("after dashboard " + _globalState.CurrentUser.Username);
         // Ensure the current user is loaded
         if (GlobalState.CurrentUser == null || GlobalState.CurrentUser.Id == Guid.Empty)
@@ -301,7 +308,7 @@
 
 
 
-        Transactions =GetAll(userId);
+        Transactions = GetAll(userId);
 
         // Filter and calculate summaries
         Inflows = _todos
@@ -330,9 +337,10 @@
         DebtsTotal = Debts.Sum(d => decimal.TryParse(d.DebtAmount, out var result) ? result : 0);
 
 
-        InflowsTotal = Inflows.Sum(t => decimal.TryParse(t.Amount, out var result) ? result : 0);
+        InflowsTotal = Inflows.Sum(t => decimal.TryParse(t.Amount, out var result) ? result : 0)
+                      + Debts.Sum(d => decimal.TryParse(d.DebtAmount, out var debtAmount) ? debtAmount : 0);
         OutflowsTotal = Outflows.Sum(t => decimal.TryParse(t.Amount, out var result) ? result : 0);
-        NetBalance = (InflowsTotal - OutflowsTotal) + DebtsTotal;
+        NetBalance = (InflowsTotal - OutflowsTotal);
 
     }
 
@@ -439,5 +447,3 @@
     //     return JsonSerializer.Deserialize<List<Debt>>(json) ?? new List<Debt>();
     // }
 }
-
-

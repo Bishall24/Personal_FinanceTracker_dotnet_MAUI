@@ -12,7 +12,7 @@ namespace Todo.Data
 
         public string SourceofDebt { get; set; }
 
-        public string DebtAmount { get; set; }
+        public decimal DebtAmount { get; set; }
 
         //public string Tag { get; set; }
         public bool IsDone { get; set; }

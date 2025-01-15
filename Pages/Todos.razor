@@ -3,37 +3,20 @@
 
 <nav class="navbar navbar-light bg-light justify-content-between">
     <h1 class="navbar-brand mb-0 h1">Transactions</h1>
+    <input type="search" class="form-control search" placeholder="Search" style="width:600px" @oninput="SearchTaskName" />
     <button class="btn btn-primary" type="button" @onclick="OpenAddTodoDialog">
         <span class="oi oi-plus" /> Add Transactions
     </button>
 </nav>
-<ul class="nav nav-tabs">
-    <li class="nav-item ">
-        <a class='nav-link btn @(_tabFilter == "All" ? "active" : "")' @onclick='()=>TabFilter("All")'>All</a>
-    </li>
-    <li class="nav-item">
-        <a class='nav-link btn @(_tabFilter == "Due" ? "active" : "")' @onclick='()=>TabFilter("Due")'>Due</a>
-    </li>
-    <li class="nav-item">
-        <a class='nav-link btn @(_tabFilter == "Done" ? "active" : "")' @onclick='()=>TabFilter("Done")'>Done</a>
-    </li>
-</ul>
+
 
 <table class="table">
     <thead>
         <tr>
+            
             <th>
                 <div class="d-flex">
-                    Status
-                    <a class='btn text-@(_sortBy == "status" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
-                       @onclick='()=>SortByHandler("status")'>
-                        <span class='oi oi-sort-@(_sortBy == "status" ? _sortDirection : "ascending")' />
-                    </a>
-                </div>
-            </th>
-            <th>
-                <div class="d-flex">
-                    <input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" />
+                    Transaction Type
                     <a class='btn text-@(_sortBy == "taskName" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
                        @onclick='()=>SortByHandler("taskName")'>
                         <span class='oi oi-sort-@(_sortBy == "taskName" ? _sortDirection : "ascending")' />
@@ -83,12 +66,7 @@
     <tbody>
         @{
             IEnumerable<Transaction> todoList = _todos;
-            if (_sortBy == "status")
-            {
-                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.IsDone) : todoList.OrderByDescending(t =>
-                t.IsDone);
-            }
-            else if (_sortBy == "taskName")
+            if (_sortBy == "taskName")
             {
                 todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.TaskName) : todoList.OrderByDescending(t =>
                 t.TaskName);
@@ -126,12 +104,7 @@
             foreach (var Transaction in todoList)
             {
                 <tr>
-                    <td>
-                        <div class="form-check">
-                            <input class="form-check-input me-0" type="checkbox" checked="@Transaction.IsDone"
-                                   @onchange='()=>ToggleDone(Transaction)' />
-                        </div>
-                    </td>
+                   
                     <td class='@(Transaction.IsDone ? "text-decoration-line-through" : "")'>@Transaction.TaskName</td>
                     <td class='@(Transaction.IsDone ? "text-decoration-line-through" : "")'>@Transaction.Amount</td>
                     <td class='@(Transaction.IsDone ? "text-decoration-line-through" : "")'>@Transaction.Notes</td>
