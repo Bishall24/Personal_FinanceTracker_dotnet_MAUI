@@ -145,10 +145,6 @@
             <input id="Amount" type="text" class="form-control" @bind="_todoModel.Amount" placeholder="Amount"
                    @oninput="ValidateAmount" />
             <label for="Amount">Amount</label>
-            @if (!string.IsNullOrEmpty(_editTodoErrorMessage))
-            {
-                <AlertMessage Type="danger" Message="@_editTodoErrorMessage" />
-            }
         </div>
         <div class="form-floating">
             <input id="Notes" type="text" class="form-control" @bind="_todoModel.Notes" placeholder="Notes" />
@@ -164,20 +160,43 @@
             </select>
             <label for="Tag">Tag</label>
         </div>
-        <div class="form-floating">
-         <label for="dueDate">Date</label>
-            <input id="dueDate" type="date"
+        <div class="form-floating mb-4">
+            <input id="dueDate"
+                   type="date"
                    @bind="_todoModel.DueDate"
-                   class="form-control text-left"
-                   placeholder="Date">
-     </div> 
+                   class="form-control"
+                   placeholder="Date"
+                   style="padding: 12px 15px; font-size: 1.1rem;" />
+            <label for="dueDate" style="padding-left: 15px; font-size: 1rem;">Date</label>
+        </div>
 
-        @if (!string.IsNullOrEmpty(_editTodoErrorMessage))
-        {
-            <AlertMessage Type="danger" Message="@_editTodoErrorMessage" />
-        }
+
+        @* @if (_showErrorPopup) *@
+        @* { *@
+        @*     <div class="popup-overlay"> *@
+        @*         <div class="popup"> *@
+        @*             <h4>Error</h4> *@
+        @*             <p>@_popupErrorMessage</p> *@
+        @*             <button class="btn btn-primary" @onclick="ClosePopup">Close</button> *@
+        @*         </div> *@
+        @*     </div> *@
+        
     </ModalDialog>
 }
+
+@if (_showErrorPopup)
+{
+    <div class="popup-overlay">
+        <div class="popup">
+            <h4>Error</h4>
+            <p>@_popupErrorMessage</p>
+            <button class="btn btn-primary" @onclick="ClosePopup">Close</button>
+        </div>
+    </div>
+}
+
+
+
 
 @if (_showDeleteTodoDialog)
 {
@@ -209,6 +228,8 @@
     private string _sortBy = "dueDate";
     private string _sortDirection = "ascending";
     private decimal DebtsTotal;
+    private bool _showErrorPopup = false; // Controls popup visibility
+    private string _popupErrorMessage = ""; // Error message to display in the popup
 
     private void ValidateAmount(ChangeEventArgs e)
     {
@@ -352,6 +373,8 @@
     //     }
     // }
 
+    
+
     private void OnEditTodoDialogClose(bool isCancel)
     {
         if (isCancel)
@@ -362,31 +385,25 @@
 
         try
         {
-            _editTodoErrorMessage = "";
-
-            // **Validation Section for validating users details
-            // Check if TaskName is empty
+            // Validation Section
             if (string.IsNullOrWhiteSpace(_todoModel.TaskName))
             {
-                _editTodoErrorMessage = "Task name is required.";
+                ShowPopup("You must select a transaction type.");
                 return;
             }
 
-            // Check if Amount is valid and positive
             if (!decimal.TryParse(_todoModel.Amount, out var amount) || amount <= 0)
             {
-                _editTodoErrorMessage = "Amount must be a valid positive number.";
+                ShowPopup("Amount must be a valid positive number.");
                 return;
             }
 
-            // Validate DueDate (optional, if required)
             if (_todoModel.DueDate < DateTime.Today)
             {
-                _editTodoErrorMessage = "Due date cannot be in the past.";
+                ShowPopup("Due date cannot be in the past.");
                 return;
             }
 
-            // Validation for checking if the outflows exceed the net balance
             if (_todoModel.TaskName == "Outflows")
             {
                 decimal currentNetBalance = _todos.Where(t => t.TaskName == "Inflows")
@@ -397,16 +414,16 @@
                 decimal debtsTotal = DebtsService.GetAll(GlobalState.CurrentUser.Id)
                                  .Sum(d => decimal.TryParse(d.DebtAmount, out var debt) ? debt : 0);
 
-                currentNetBalance = currentNetBalance + debtsTotal;
+                currentNetBalance += debtsTotal;
 
                 if (amount > currentNetBalance)
                 {
-                    _editTodoErrorMessage = $"Outflow amount exceeds the available balance of {currentNetBalance:C}.";
+                    ShowPopup($"Outflow amount exceeds the available balance of {currentNetBalance:C}.");
                     return;
                 }
             }
 
-            // **Proceed with Form Submission**
+            // Form Submission Logic
             if (_todoModel.Id == Guid.Empty)
             {
                 _todos = TodosService.Create(
@@ -432,11 +449,25 @@
 
             _showEditTodoDialog = false;
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            _editTodoErrorMessage = e.Message;
+            ShowPopup("An error occurred while processing your request.");
         }
     }
+
+    // Method to Show the Popup
+    private void ShowPopup(string message)
+    {
+        _popupErrorMessage = message;
+        _showErrorPopup = true;
+    }
+
+    private void ClosePopup()
+    {
+        _showErrorPopup = false;
+    }
+
+
 
 
     private void OnDeleteTodoDialogClose(bool isCancel)

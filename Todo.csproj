@@ -66,6 +66,7 @@
       <Content Include="Resources\Splash\splash.svg" />
     </ItemGroup>
     <ItemGroup>
+      <None Include="Pages\Debts.razor.razor" />
       <None Include="wwwroot\Images\dotnet_bot.svg" />
       <None Include="wwwroot\Images\finance.png" />
     </ItemGroup>

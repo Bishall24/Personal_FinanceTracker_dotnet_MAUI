@@ -9,6 +9,8 @@
     </button>
 </nav>
 
+<h3> <span style="color: blue;">Pending Debts</span> </h3>
+
 
  
 
@@ -224,11 +226,22 @@ else
             >
         </div>
 
-        @if (!string.IsNullOrEmpty(_editTodoErrorMessage))
-        {
-            <AlertMessage Type="danger" Message="@_editTodoErrorMessage" />
-        }
+        @* @if (!string.IsNullOrEmpty(_editTodoErrorMessage)) *@
+        @* { *@
+        @*     <AlertMessage Type="danger" Message="@_editTodoErrorMessage" /> *@
+        @* } *@
     </ModalDialog>
+}
+
+@if (_showErrorPopup)
+{
+    <div class="popup-overlay">
+        <div class="popup">
+            <h4>Error</h4>
+            <p>@_popupErrorMessage</p>
+            <button class="btn btn-primary" @onclick="ClosePopup">Close</button>
+        </div>
+    </div>
 }
 
 @if (_showDeleteTodoDialog)
@@ -254,6 +267,9 @@ else
     private List<Debt> _deletedDebts = new List<Debt>();
 
     private decimal _totalInflows;
+
+    private bool _showErrorPopup = false; // Controls popup visibility
+    private string _popupErrorMessage = ""; // Error message to display in the popup
 
 
     private Debt _deleteTodo { get; set; }
@@ -302,7 +318,7 @@ else
 
     private void OpenAddTodoDialog()
     {
-        _dialogTitle = "Add Transaction";
+        _dialogTitle = "Form for adding Depts";
         _dialogOkLabel = "Add";
         _todoModel = new Debt();
         _todoModel.Id = Guid.Empty;
@@ -362,22 +378,22 @@ else
 
                 if (string.IsNullOrWhiteSpace(_todoModel.SourceofDebt))
                 {
-                    _editTodoErrorMessage = "Source of Debt is required.";
+                    ShowPopup("Source of Debt is required.");
                     return;
                 }
 
                 if (!decimal.TryParse(_todoModel.DebtAmount, out var debtAmount) || debtAmount <= 0)
                 {
-                    _editTodoErrorMessage = "Debt Amount must be a valid number greater than zero.";
+                    ShowPopup("Debt Amount must be a valid number greater than zero.");
                     return;
                 }
 
                 if (_todoModel.DueDate == default)
                 {
-                    _editTodoErrorMessage = "Due Date is required.";
+                    ShowPopup("Due Date is required.");
                     return;
                 }
-                _editTodoErrorMessage = "";
+                // _editTodoErrorMessage = "";
                 if (_todoModel.Id == Guid.Empty)
                 {
                     _todos = DebtsService.Create(_globalState.CurrentUser.Id, _todoModel.TaskName, _todoModel.SourceofDebt, _todoModel.DebtAmount, _todoModel.DueDate);
@@ -391,10 +407,22 @@ else
             }
             catch (Exception e)
             {
-                _editTodoErrorMessage = e.Message;
+                ShowPopup(e.Message);
             }
         }
     }
+
+    private void ShowPopup(string message)
+    {
+        _popupErrorMessage = message;
+        _showErrorPopup = true;
+    }
+
+    private void ClosePopup()
+    {
+        _showErrorPopup = false;
+    }
+
     private void OnDeleteTodoDialogClose(bool isCancel)
     {
         if (isCancel)

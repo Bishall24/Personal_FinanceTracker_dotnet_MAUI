@@ -125,7 +125,7 @@
                 <tbody>
                     @foreach (var transaction in (FilteredOutflows.Any() ? FilteredOutflows : Outflows)
                     .OrderByDescending(t => decimal.TryParse(t.Amount, out var parsedAmount) ? parsedAmount : 0)
-                    .Take(5)) // Limiting to top 5 after sorting
+                    .Take(5)) // Limiting to top 5 after sorting 
                     {
                         <tr>
                             <td>@transaction.Amount</td>
