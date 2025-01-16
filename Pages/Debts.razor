@@ -2,7 +2,7 @@
 
 <nav class="navbar" style="background: linear-gradient(90deg, #007BFF, #00C6FF); padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
     <h1 class="navbar-brand" style="color: white; font-size: 28px; font-weight: bold; margin: 0;">Debts</h1>
-    @* <input type="search" class="form-control search" placeholder="Search" @oninput="SearchTaskName" /> *@
+    <input type="search" class="form-control search" placeholder="Search" style="width:300px" @oninput="SearchTaskName" />
     <button class="btn btn-primary" type="button" @onclick="OpenAddTodoDialog"
             style="background-color: #28a745; border: none; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; transition: all 0.3s ease-in-out; display: flex; align-items: center;">
         <span class="oi oi-plus" style="margin-right: 5px; font-size: 16px;"></span> Add Debt
@@ -74,7 +74,15 @@
                     </a>
                 </div>
             </th>
-            
+            <th>
+                 <div class="d-flex">
+                     Actions
+                     <a class='btn text-@(_sortBy == "createdAt" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                     @onclick='()=>SortByHandler("createdAt")'>
+                    <span class='oi oi-sort-@(_sortBy == "createdAt" ? _sortDirection : "ascending")' />
+                    </a>
+                     </div>
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -152,6 +160,7 @@
                             @Debt.CreatedAt.ToString("MMM dd, yyyy h:mm tt")
                         </p>
                     </td>
+
                     <td>
                         <button disabled="@Debt.IsDone" class="btn btn-outline-secondary" type="button"
                         @onclick="()=>OpenEditTodoDialog(Debt)">
@@ -246,7 +255,7 @@ else
 
 @if (_showDeleteTodoDialog)
 {
-    <ModalDialog Title="Delete Todo" OnClose="@OnDeleteTodoDialogClose" OkLabel="Confirm">
+    <ModalDialog Title="Clear Debts" OnClose="@OnDeleteTodoDialogClose" OkLabel="Confirm">
         <p>Are you sure you want to clear the debt <strong>@_deleteTodo.TaskName, @_deleteTodo.SourceofDebt, @_deleteTodo.DebtAmount </strong> the debts?</p>
         @* <p>Are you sure you want to delete <strong>@_deleteTodo.Amount</strong> amount?</p>
     <p>Are you sure you want to delete <strong>@_deleteTodo.Notes</strong> notes?</p>
@@ -331,7 +340,7 @@ else
         if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
         {
             _todos = DebtsService.GetAll(_globalState.CurrentUser.Id).Where(t =>
-            t.TaskName.ToLower().Contains(searchTerm.ToLower())).ToList();
+            t.SourceofDebt.ToLower().Contains(searchTerm.ToLower())).ToList();
         }
         else
         {

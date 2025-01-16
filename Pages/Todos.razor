@@ -3,7 +3,7 @@
 
 <nav class="navbar navbar-light bg-light justify-content-between">
     <h1 class="navbar-brand mb-0 h1">Transactions</h1>
-    <input type="search" class="form-control search" placeholder="Search" style="width:600px" @oninput="SearchTaskName" />
+    <input type="search" class="form-control search" placeholder="Search" style="width:300px" @oninput="SearchTaskName" />
     <button class="btn btn-primary" type="button" @onclick="OpenAddTodoDialog">
         <span class="oi oi-plus" /> Add Transactions
     </button>
@@ -278,7 +278,9 @@
         if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
         {
             _todos = TodosService.GetAll(_globalState.CurrentUser.Id).Where(t =>
-            t.TaskName.ToLower().Contains(searchTerm.ToLower())).ToList();
+           t.TaskName.ToLower().Contains(searchTerm.ToLower()) ||
+            (!string.IsNullOrEmpty(t.Tag) && t.Tag.ToLower().Contains(searchTerm.ToLower())) // Search in Tags
+            ).ToList();
         }
         else
         {

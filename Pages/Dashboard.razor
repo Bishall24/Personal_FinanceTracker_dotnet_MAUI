@@ -38,11 +38,15 @@
     </div>
 </div>
 
-<h2 class="mb-3">Transaction Details</h2>
+<h2>Transaction Details</h2>
 <div class="row mb-4">
     <div class="col-lg-6">
         <h3>Transaction Pie Chart</h3>
         <canvas id="transactionsChart" class="mb-3"></canvas>
+    </div>
+    <div class="col-lg-6">
+        <h3>Transaction Histogram</h3>
+        <canvas id="transactionsHistogram" class="mb-3"></canvas>
     </div>
 </div>
 
@@ -419,7 +423,59 @@
             }
         };
 
+        
+
+        // Histogram Data
+        var histogramLabels = Transactions.Select(t => t.DueDate.ToString("yyyy-MM"))
+                                           .Distinct()
+                                           .OrderBy(label => label)
+                                           .ToArray();
+
+        var histogramData = new
+        {
+            labels = histogramLabels,
+            datasets = new[]
+            {
+                new
+                {
+                    label = "Inflows",
+                    data = histogramLabels.Select(label => Transactions
+                                                        .Where(t => t.TaskName == "Inflows" && t.DueDate.ToString("yyyy-MM") == label)
+                                                        .Sum(t => decimal.TryParse(t.Amount, out var amount) ? amount : 0)).ToArray(),
+                    backgroundColor = "#28a745"
+                },
+                new
+                {
+                    label = "Outflows",
+                    data = histogramLabels.Select(label => Transactions
+                                                        .Where(t => t.TaskName == "Outflows" && t.DueDate.ToString("yyyy-MM") == label)
+                                                        .Sum(t => decimal.TryParse(t.Amount, out var amount) ? amount : 0)).ToArray(),
+                    backgroundColor = "#dc3545"
+                },
+                new
+                {
+                    label = "Debts",
+                    data = histogramLabels.Select(label => Debts
+                                                        .Where(d => d.DueDate.ToString("yyyy-MM") == label)
+                                                        .Sum(d => decimal.TryParse(d.DebtAmount, out var amount) ? amount : 0)).ToArray(),
+                    backgroundColor = "#007bff"
+                }
+            }
+        };
+
+        var histogramOptions = new
+        {
+            responsive = true,
+            scales = new
+            {
+                x = new { beginAtZero = true },
+                y = new { beginAtZero = true }
+            }
+        };
+
+        // Initialize Charts via JSRuntime
         await JSRuntime.InvokeVoidAsync("renderPieChart", "transactionsChart", chartData, chartOptions);
+        await JSRuntime.InvokeVoidAsync("renderBarChart", "transactionsHistogram", histogramData, histogramOptions);
     }
 
 

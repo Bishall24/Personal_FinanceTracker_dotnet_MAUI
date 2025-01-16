@@ -17,10 +17,10 @@
 			height: 100vh; /* Full viewport height */
 		}
 
-		canvas {
-			width: 300px !important; /* Set the desired width */
-			height: 300px !important; /* Set the desired height */
-		}
+        canvas {
+            width: 350px !important; /* Increased width */
+            height: 350px !important; /* Increased height */
+        }
 	</style>
 </head>
 
@@ -35,9 +35,12 @@
 		<a class="dismiss">🗙</a>
 	</div>
 
-	<!-- Chart container -->
+	 <!--Chart container--> 
 	<!--<div class="chart-container">
 		<canvas id="myPieChart"></canvas>
+		<canvas id="myHistogram"></canvas>
+
+
 	</div>-->
 
 	<script src="_framework/blazor.webview.js" autostart="false"></script>
@@ -68,6 +71,46 @@
 				options: options
 			});
 		}
+
+        // Data and options for the histogram
+        const histogramData = {
+            labels: ["Category 1", "Category 2", "Category 3", "Category 4"],
+            datasets: [{
+                label: "Sample Data",
+                data: [12, 19, 3, 5],
+                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"]
+            }]
+        };
+
+        const histogramOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Categories"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Values"
+                    }
+                }
+            }
+        };
+
+        renderBarChart("myHistogram", histogramData, histogramOptions);
+
+        function renderBarChart(canvasId, data, options) {
+            const ctx = document.getElementById(canvasId).getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: data,
+                options: options
+            });
+        }
 	</script>
 </body>
 </html>
