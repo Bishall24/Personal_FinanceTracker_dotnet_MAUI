@@ -17,6 +17,7 @@
             <div class="card-body">
                 <h5 class="card-title">Total Inflows</h5>
                 <p class="card-text display-6">@InflowsTotal.ToString("C")</p>
+                <p class="card-text"><strong>Total number of Inflows:</strong> @InflowsCount</p>
             </div>
         </div>
     </div>
@@ -25,6 +26,7 @@
             <div class="card-body">
                 <h5 class="card-title">Total Outflows</h5>
                 <p class="card-text display-6">@OutflowsTotal.ToString("C")</p>
+                <p class="card-text"><strong>Total number of Outflows</strong> @OutflowsCount</p>
             </div>
         </div>
     </div>
@@ -33,6 +35,7 @@
             <div class="card-body">
                 <h5 class="card-title">Net Balance</h5>
                 <p class="card-text display-6">@NetBalance.ToString("C")</p>
+                <p class="card-text"><strong>Total number of Debts:</strong> @DebtsCount</p>
             </div>
         </div>
     </div>
@@ -276,6 +279,11 @@
     private List<Debt> Debts = new();
     private List<Debt> FilteredDebts = new();
     private decimal DebtsTotal; // New: Total debts amount for calculating total depts in net balance.
+
+    private int InflowsCount;
+    private int OutflowsCount;
+    private int DebtsCount;
+
     private decimal InflowsTotal;
     private decimal OutflowsTotal;
     private decimal NetBalance;
@@ -338,6 +346,11 @@
         })
     .OrderByDescending(t => decimal.Parse(t.Amount)) // Sort numerically by Amount
     .ToList();
+
+        InflowsCount = Inflows.Count;
+        OutflowsCount = Outflows.Count;
+        DebtsCount = Debts.Count;
+
         DebtsTotal = Debts.Sum(d => decimal.TryParse(d.DebtAmount, out var result) ? result : 0);
 
 

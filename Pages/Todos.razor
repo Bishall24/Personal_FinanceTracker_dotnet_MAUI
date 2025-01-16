@@ -200,7 +200,7 @@
 
 @if (_showDeleteTodoDialog)
 {
-    <ModalDialog Title="Delete Todo" OnClose="@OnDeleteTodoDialogClose" OkLabel="Confirm">
+    <ModalDialog Title="Delete Transactions" OnClose="@OnDeleteTodoDialogClose" OkLabel="Confirm">
         <p>Are you sure you want to delete <strong>@_deleteTodo.TaskName, @_deleteTodo.Amount, @_deleteTodo.Notes, @_deleteTodo.Tag  </strong> the transaction?</p>
         @* <p>Are you sure you want to delete <strong>@_deleteTodo.Amount</strong> amount?</p>
         <p>Are you sure you want to delete <strong>@_deleteTodo.Notes</strong> notes?</p>
