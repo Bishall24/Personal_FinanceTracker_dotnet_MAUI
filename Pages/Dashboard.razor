@@ -7,7 +7,6 @@
 @inject IJSRuntime JSRuntime
 
 
-
 <h1 class="mb-4">Dashboard</h1>
 
 <h2 class="mb-3">Summary</h2>
@@ -18,6 +17,7 @@
                 <h5 class="card-title">Total Inflows</h5>
                 <p class="card-text display-6">@InflowsTotal.ToString("C")</p>
                 <p class="card-text"><strong>Total number of Inflows:</strong> @InflowsCount</p>
+                <p class="card-text"><strong>Total number of Debts:</strong> @DebtsCount</p>
             </div>
         </div>
     </div>
@@ -35,7 +35,6 @@
             <div class="card-body">
                 <h5 class="card-title">Net Balance</h5>
                 <p class="card-text display-6">@NetBalance.ToString("C")</p>
-                <p class="card-text"><strong>Total number of Debts:</strong> @DebtsCount</p>
             </div>
         </div>
     </div>
@@ -297,28 +296,19 @@
         FilteredInflows = Inflows;
         FilteredOutflows = Outflows;
         FilteredDebts = debts;
-        //System.Diagnostics.Debug.WriteLine("after dashboard " + _globalState.CurrentUser.Username);
-        // Ensure the current user is loaded
         if (GlobalState.CurrentUser == null || GlobalState.CurrentUser.Id == Guid.Empty)
         {
-            // NavigationManager.NavigateTo("/login");
+           
             return;
         }
 
-        // Fetch all transactions for the current user
+       
         Guid userId = GlobalState.CurrentUser.Id;
         _todos = TodosService.GetAll(userId);
-        // Transactions = TodosService.GetAll(userId);
-
-        // Fetch debts and calculate the total debt amount
         Debts = DebtsService.GetAll(userId);
 
 
-
-
         // Calculate net balance
-
-
 
         Transactions = GetAll(userId);
 
@@ -503,16 +493,4 @@
         var json = File.ReadAllText(todosFilePath);
         return JsonSerializer.Deserialize<List<Transaction>>(json);
     }
-
-    // public static List<Debt> GetAll(Guid userId)
-    // {
-    //     string userDebtsFilePath = GetUserDebtsFilePath(userId);
-    //     if (!File.Exists(userDebtsFilePath))
-    //     {
-    //         return new List<Debt>();
-    //     }
-
-    //     var json = File.ReadAllText(userDebtsFilePath);
-    //     return JsonSerializer.Deserialize<List<Debt>>(json) ?? new List<Debt>();
-    // }
 }

@@ -150,16 +150,35 @@
             <input id="Notes" type="text" class="form-control" @bind="_todoModel.Notes" placeholder="Notes" />
             <label for="Notes">Notes</label>
         </div>
+        @* <div class="form-floating"> *@
+        @*     <select id="Tag" class="form-control" @bind="_todoModel.Tag"> *@
+        @*         <option value="" disabled selected>Select Tag</option> *@
+        @*         <option value="Groceries">Groceries</option> *@
+        @*         <option value="Monthly">Monthly</option> *@
+        @*         <option value="Rent">Rent</option> *@
+        @*         <option value="Other">Other</option> *@
+        @*     </select> *@
+        @*     <label for="Tag">Tag</label> *@
+        @* </div> *@
         <div class="form-floating">
-            <select id="Tag" class="form-control" @bind="_todoModel.Tag">
+            <select id="Tag" class="form-control" @onchange="HandleTagChange">
                 <option value="" disabled selected>Select Tag</option>
                 <option value="Groceries">Groceries</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Rent">Rent</option>
-                <option value="Other">Other</option>
+                <option value="EMIs">EMIs</option>
+                <option value="Food">Food</option>
+                <option value="Custom">Custom</option>
             </select>
             <label for="Tag">Tag</label>
         </div>
+        @if (_isCustomTag)
+        {
+            <div class="form-floating mt-3">
+                <input id="CustomTag" type="text" class="form-control" @bind="_todoModel.Tag" placeholder="Custom Tag" />
+                <label for="CustomTag">Custom Tag</label>
+            </div>
+        }
         <div class="form-floating mb-4">
             <input id="dueDate"
                    type="date"
@@ -230,6 +249,22 @@
     private decimal DebtsTotal;
     private bool _showErrorPopup = false; // Controls popup visibility
     private string _popupErrorMessage = ""; // Error message to display in the popup
+    private bool _isCustomTag = false;
+
+    private void HandleTagChange(ChangeEventArgs e)
+    {
+        var selectedTag = e.Value?.ToString();
+        if (selectedTag == "Custom")
+        {
+            _isCustomTag = true;
+            _todoModel.Tag = string.Empty; // Clear the tag value for custom input
+        }
+        else
+        {
+            _isCustomTag = false;
+            _todoModel.Tag = selectedTag; // Set the selected tag
+        }
+    }
 
     private void ValidateAmount(ChangeEventArgs e)
     {
@@ -309,73 +344,7 @@
         _todoModel.DueDate = DateTime.Parse(e.Value.ToString());
     }
 
-    // private void OnEditTodoDialogClose(bool isCancel)
-    // {
-    //     if (isCancel)
-    //     {
-    //         _showEditTodoDialog = false;
-    //     }
-    //     else
-    //     {
-    //         try
-    //         {
-    //             _editTodoErrorMessage = "";
 
-    //             Validation for checking if the outflows is greater than net balance
-    //             if (_todoModel.TaskName == "Outflows")
-    //             {
-    //                 decimal outflowAmount = decimal.TryParse(_todoModel.Amount, out var result) ? result : 0;
-    //                 decimal currentNetBalance = _todos.Where(t => t.TaskName == "Inflows")
-    //                                                   .Sum(t => decimal.TryParse(t.Amount, out var inflow) ? inflow : 0)
-    //                                            - _todos.Where(t => t.TaskName == "Outflows" && t.Id != _todoModel.Id)
-    //                                                   .Sum(t => decimal.TryParse(t.Amount, out var outflow) ? outflow : 0);
-
-    //                 decimal debtsTotal = DebtsService.GetAll(GlobalState.CurrentUser.Id)
-    //                               .Sum(d => decimal.TryParse(d.DebtAmount, out var debt) ? debt : 0);
-
-    //                 currentNetBalance = currentNetBalance + debtsTotal;
-
-    //                 if (outflowAmount > currentNetBalance)
-    //                 {
-    //                     _editTodoErrorMessage = $"Outflow amount exceeds the available balance of {currentNetBalance:C}.";
-    //                     return;
-    //                 }
-    //             }
-
-    //             Add or update the transaction
-    //             if (_todoModel.Id == Guid.Empty)
-    //             {
-    //                 _todos = TodosService.Create(
-    //                     _globalState.CurrentUser.Id,
-    //                     _todoModel.TaskName,
-    //                     _todoModel.Amount,
-    //                     _todoModel.Notes,
-    //                     _todoModel.Tag,
-    //                     _todoModel.DueDate);
-    //             }
-    //             else
-    //             {
-    //                 _todos = TodosService.Update(
-    //                     _globalState.CurrentUser.Id,
-    //                     _todoModel.Id,
-    //                     _todoModel.TaskName,
-    //                     _todoModel.Amount,
-    //                     _todoModel.Notes,
-    //                     _todoModel.Tag,
-    //                     _todoModel.DueDate,
-    //                     _todoModel.IsDone);
-    //             }
-
-    //             _showEditTodoDialog = false;
-    //         }
-    //         catch (Exception e)
-    //         {
-    //             _editTodoErrorMessage = e.Message;
-    //         }
-    //     }
-    // }
-
-    
 
     private void OnEditTodoDialogClose(bool isCancel)
     {
