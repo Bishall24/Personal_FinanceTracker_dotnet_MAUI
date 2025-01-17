@@ -1,4 +1,4 @@
-﻿@page "/todos"
+﻿@page "/finance"
 @inject GlobalState GlobalState
 
 <nav class="navbar navbar-light bg-light justify-content-between">
@@ -188,17 +188,6 @@
                    style="padding: 12px 15px; font-size: 1.1rem;" />
             <label for="dueDate" style="padding-left: 15px; font-size: 1rem;">Date</label>
         </div>
-
-
-        @* @if (_showErrorPopup) *@
-        @* { *@
-        @*     <div class="popup-overlay"> *@
-        @*         <div class="popup"> *@
-        @*             <h4>Error</h4> *@
-        @*             <p>@_popupErrorMessage</p> *@
-        @*             <button class="btn btn-primary" @onclick="ClosePopup">Close</button> *@
-        @*         </div> *@
-        @*     </div> *@
         
     </ModalDialog>
 }
